@@ -1,0 +1,29 @@
+.sidebar-section .memories-subtitle {
+  margin-top: 20px;
+}
+
+.trip-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trip-list li + li {
+  margin-top: 6px;
+}
+
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.drawer__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.memory-coords {
+  margin-top: -6px;
+}

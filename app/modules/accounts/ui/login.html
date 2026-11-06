@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập · Bản đồ Ký ức</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <h1>Đăng nhập</h1>
+    <p class="muted">Quay lại với những ký ức của bạn.</p>
+
+    <form class="form" data-endpoint="/api/auth/login" data-redirect="/">
+      <label class="field">Email
+        <input type="email" name="email" autocomplete="email" required>
+      </label>
+      <label class="field">Mật khẩu
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p class="form-message" hidden></p>
+      <button class="button" type="submit">Đăng nhập</button>
+    </form>
+
+    <p class="auth-divider">hoặc</p>
+    <div class="social-buttons">
+      <a class="icon-button" href="/api/auth/google/login">Đăng nhập bằng Google</a>
+      <a class="icon-button" href="/api/auth/facebook/login">Đăng nhập bằng Facebook</a>
+    </div>
+
+    <p class="auth-links">
+      <a href="/accounts/forgot-password.html">Quên mật khẩu?</a> ·
+      <a href="/accounts/register.html">Tạo tài khoản</a>
+    </p>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/accounts.js"></script>
+</body>
+</html>

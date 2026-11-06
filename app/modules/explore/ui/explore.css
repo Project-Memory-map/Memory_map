@@ -1,0 +1,13 @@
+.explore-filter {
+  margin-top: 12px;
+}
+
+.pin-popup h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.pin-popup p {
+  margin: 2px 0;
+  color: var(--color-muted);
+}

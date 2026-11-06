@@ -1,0 +1,57 @@
+.admin-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: calc(var(--topbar-height) + 24px) 16px 48px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 16px;
+}
+
+.admin-tab {
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-tab.is-active {
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.admin-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.admin-search input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.admin-table th {
+  background: #f6f8fa;
+}

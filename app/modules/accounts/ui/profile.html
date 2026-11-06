@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ cá nhân · Bản đồ Ký ức</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Bản đồ Ký ức</a>
+    <nav id="account-menu" class="account-menu"></nav>
+  </header>
+
+  <main class="profile-page">
+    <section>
+      <h1>Hồ sơ cá nhân</h1>
+      <form id="profile-form" class="form" data-endpoint="/api/users/me" data-method="patch"
+            data-success="Đã cập nhật hồ sơ">
+        <label class="field">Tên hiển thị
+          <input type="text" name="display_name" maxlength="100" required>
+        </label>
+        <label class="field">Giới thiệu ngắn
+          <textarea name="bio" maxlength="500" rows="3"></textarea>
+        </label>
+        <p class="form-message" hidden></p>
+        <button class="button" type="submit">Lưu hồ sơ</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Ảnh đại diện</h2>
+      <form class="form" enctype="multipart/form-data" data-endpoint="/api/users/me/avatar"
+            data-success="Đã cập nhật ảnh đại diện">
+        <img id="avatar-preview" class="avatar-preview" alt="Ảnh đại diện" hidden>
+        <label class="field">Chọn ảnh (.jpg, .png, .heic, tối đa 5 MB)
+          <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.heic" required>
+        </label>
+        <p class="form-message" hidden></p>
+        <button class="button" type="submit">Tải ảnh lên</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Đổi mật khẩu</h2>
+      <form class="form" data-endpoint="/api/auth/change-password" data-success="Đã đổi mật khẩu">
+        <label class="field">Mật khẩu hiện tại
+          <input type="password" name="current_password" autocomplete="current-password">
+        </label>
+        <label class="field">Mật khẩu mới
+          <input type="password" name="new_password" minlength="8" autocomplete="new-password"
+                 pattern="(?=.*[A-Za-z])(?=.*\d).{8,}" title="Ít nhất 8 ký tự gồm chữ và số" required>
+        </label>
+        <label class="field">Nhập lại mật khẩu mới
+          <input type="password" name="password_confirm" autocomplete="new-password" required>
+        </label>
+        <p class="form-message" hidden></p>
+        <button class="button" type="submit">Đổi mật khẩu</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/account-menu.js"></script>
+  <script src="/accounts/accounts.js"></script>
+  <script src="/accounts/profile.js"></script>
+</body>
+</html>

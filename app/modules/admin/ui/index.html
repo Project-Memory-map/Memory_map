@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản trị · Bản đồ Ký ức</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Bản đồ Ký ức · Quản trị</a>
+    <nav id="account-menu" class="account-menu"></nav>
+  </header>
+
+  <main class="admin-page" hidden>
+    <nav class="admin-tabs" role="tablist">
+      <button class="admin-tab is-active" type="button" data-tab="memories">Ký ức công khai</button>
+      <button class="admin-tab" type="button" data-tab="users">Tài khoản</button>
+      <button class="admin-tab" type="button" data-tab="actions">Nhật ký thao tác</button>
+    </nav>
+
+    <section class="admin-panel" data-panel="memories">
+      <form class="admin-search">
+        <input type="search" name="q" placeholder="Tìm theo tiêu đề hoặc tác giả">
+        <button class="button" type="submit">Tìm</button>
+      </form>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Tiêu đề</th><th>Tác giả</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="admin-memories"></tbody>
+      </table>
+    </section>
+
+    <section class="admin-panel" data-panel="users" hidden>
+      <form class="admin-search">
+        <input type="search" name="q" placeholder="Tìm theo email hoặc tên hiển thị">
+        <button class="button" type="submit">Tìm</button>
+      </form>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Tên hiển thị</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="admin-users"></tbody>
+      </table>
+    </section>
+
+    <section class="admin-panel" data-panel="actions" hidden>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Thời gian</th><th>Quản trị viên</th><th>Thao tác</th><th>Đối tượng</th><th>Lý do</th></tr>
+        </thead>
+        <tbody id="admin-actions"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/account-menu.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

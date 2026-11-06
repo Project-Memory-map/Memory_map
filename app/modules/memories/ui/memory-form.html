@@ -1,0 +1,38 @@
+<div class="drawer__header">
+  <h2>Ghim ký ức mới</h2>
+  <button type="button" class="icon-button" data-close-drawer aria-label="Đóng">✕</button>
+</div>
+<form id="memory-form" class="form" enctype="multipart/form-data">
+  <label class="field">Tiêu đề
+    <input type="text" name="title" maxlength="200" required>
+  </label>
+  <label class="field">Địa điểm
+    <input type="text" name="place_name" maxlength="255" required>
+  </label>
+  <p id="memory-coords" class="muted memory-coords"></p>
+  <input type="hidden" name="latitude">
+  <input type="hidden" name="longitude">
+  <label class="field">Ngày
+    <input type="date" name="memory_date" required>
+  </label>
+  <label class="field">Câu chuyện
+    <textarea name="content" rows="5" required></textarea>
+  </label>
+  <label class="field">Hashtag (cách nhau bằng dấu cách, tối đa 10)
+    <input type="text" name="hashtags" placeholder="#dalat #phuot">
+  </label>
+  <label class="field">Ảnh (tối đa 10 ảnh, mỗi ảnh ≤ 5 MB)
+    <input type="file" name="images" accept=".jpg,.jpeg,.png,.heic" multiple>
+  </label>
+  <label class="field">Video (1 video .mp4/.mov, ≤ 50 MB)
+    <input type="file" name="video" accept=".mp4,.mov">
+  </label>
+  <label class="field">Chế độ
+    <select name="visibility">
+      <option value="private" selected>Riêng tư</option>
+      <option value="public">Công khai</option>
+    </select>
+  </label>
+  <p class="form-message" hidden></p>
+  <button class="button" type="submit">Lưu ký ức</button>
+</form>

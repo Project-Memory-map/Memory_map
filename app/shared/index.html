@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bản đồ Ký ức</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+  <link rel="stylesheet" href="/memories/memories.css">
+  <link rel="stylesheet" href="/explore/explore.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="sidebar-toggle" class="icon-button" type="button" aria-label="Mở thanh bên">☰</button>
+    <a class="brand" href="/">Bản đồ Ký ức</a>
+    <nav id="account-menu" class="account-menu"></nav>
+  </header>
+
+  <aside id="sidebar" class="sidebar">
+    <section id="explore-panel" class="sidebar-section"></section>
+    <section id="memories-panel" class="sidebar-section"></section>
+  </aside>
+
+  <main id="map" class="map" aria-label="Bản đồ ký ức"></main>
+
+  <div id="drawer" class="drawer" hidden></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/shell.js"></script>
+  <script src="/accounts/account-menu.js"></script>
+  <script src="/memories/memories.js"></script>
+  <script src="/explore/explore.js"></script>
+</body>
+</html>
