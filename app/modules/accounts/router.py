@@ -7,17 +7,44 @@ from app.modules.accounts import service
 from app.modules.accounts.deps import get_current_user
 from app.modules.accounts.models import User
 from app.modules.accounts.schemas import RegisterRequest, UserResponse
+from app.modules.accounts.login_feature import router as login_router
+from app.modules.accounts.reset_feature import router as reset_router
 
 router = APIRouter(prefix="/api/auth", tags=["M1 - Tài khoản"])
 
+router.include_router(login_router)
+router.include_router(reset_router)
+
 
 @router.post("/register", status_code=201)
-def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
-    data = service.register(db, display_name=payload.display_name, email=payload.email, password=payload.password)
-    return build_response(201, service.MSG_REGISTER_OK, request, data=data)
+def register(
+    request: Request,
+    payload: RegisterRequest,
+    db: Session = Depends(get_db),
+):
+    data = service.register(
+        db,
+        display_name=payload.display_name,
+        email=payload.email,
+        password=payload.password,
+    )
+    return build_response(
+        201,
+        service.MSG_REGISTER_OK,
+        request,
+        data=data,
+    )
 
 
 @router.get("/me")
-def read_me(request: Request, current_user: User = Depends(get_current_user)):
+def read_me(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
     data = UserResponse.model_validate(current_user)
-    return build_response(200, "Lấy thông tin tài khoản thành công", request, data=data)
+    return build_response(
+        200,
+        "Lấy thông tin tài khoản thành công",
+        request,
+        data=data,
+    )
