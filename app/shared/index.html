@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bản Đồ Ký Ức - Đăng nhập Google</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center font-sans p-4">
+
+  <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 max-w-sm w-full text-center">
+    <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg shadow-blue-500/30">
+      🗺️
+    </div>
+    <h1 class="text-xl font-bold text-slate-900">Bản Đồ Ký Ức</h1>
+    <p class="text-xs text-slate-500 mt-1 mb-6">Đăng nhập tài khoản Google để tiếp tục</p>
+
+    <!-- Nút bấm Google -->
+    <div id="g_id_onload"
+         data-client_id="855043085255-ohk0ptaea6h83v2dr6p7cv5nq90ut9ed.apps.googleusercontent.com"
+         data-callback="handleGoogleLogin"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin flex justify-center mb-4" 
+         data-type="standard" 
+         data-size="large" 
+         data-theme="outline" 
+         data-text="sign_in_with" 
+         data-shape="rectangular" 
+         data-logo_alignment="left">
+    </div>
+
+    <!-- Hộp thông báo phản hồi -->
+    <div id="statusBox" class="hidden mt-4 p-3 rounded-xl text-xs font-medium text-left"></div>
+  </div>
+
+  <script>
+    async function handleGoogleLogin(response) {
+      const statusBox = document.getElementById("statusBox");
+      statusBox.classList.remove("hidden", "bg-red-50", "text-red-600", "bg-green-50", "text-green-700");
+
+      try {
+        const res = await fetch("http://localhost:8000/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_token: response.credential })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusBox.classList.add("bg-red-50", "text-red-600");
+          statusBox.innerHTML = `⚠️ <strong>Thất bại:</strong> ${data.detail || "Đăng nhập không thành công"}`;
+          return;
+        }
+
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("user_name", data.display_name);
+
+        statusBox.classList.add("bg-green-50", "text-green-700");
+        statusBox.innerHTML = `
+          ✅ <strong>Thành công!</strong><br>
+          Xin chào: <strong>${data.display_name}</strong><br>
+          Token: <code class="text-[10px] break-all">${data.access_token}</code>
+        `;
+      } catch (err) {
+        statusBox.classList.add("bg-red-50", "text-red-600");
+        statusBox.innerHTML = "❌ <strong>Lỗi:</strong> Không kết nối được tới Backend (hãy chắc chắn server backend đang chạy).";
+      }
+    }
+  </script>
+</body>
+</html>
