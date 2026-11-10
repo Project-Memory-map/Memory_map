@@ -1,0 +1,5 @@
+.explore-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.explore-viewport { display: inline-flex; gap: 6px; align-items: center; font-size: 0.84rem; font-weight: 600; color: var(--color-text-2); cursor: pointer; }
+.explore-viewport input { accent-color: var(--color-public); }
+.active-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.active-filters .chip { background: var(--color-public-soft); border-color: #fecdd3; color: #be123c; }

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Cấu hình riêng từng máy (chứa mật khẩu)
+.env
+
+# Tệp người dùng tải lên
+uploads/
+
+# IDE
+.vscode/
+.idea/

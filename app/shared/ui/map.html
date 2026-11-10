@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Bản đồ Ký ức – ghim kỷ niệm du lịch lên bản đồ, gom thành chuyến đi và khám phá ký ức của cộng đồng.">
+  <title>Bản đồ Ký ức</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/map.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+  <link rel="stylesheet" href="/memories/memories.css">
+  <link rel="stylesheet" href="/explore/explore.css">
+</head>
+<body class="map-page">
+  <header class="topbar">
+    <button id="sidebar-toggle" class="icon-button icon-button--round" type="button" aria-label="Mở thanh bên" aria-controls="sidebar">☰</button>
+    <a class="brand" href="/">
+      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+      <span class="brand__text">Bản đồ Ký ức</span>
+    </a>
+
+    <form id="place-search" class="place-search" role="search" autocomplete="off">
+      <label class="sr-only" for="place-search-input">Tìm địa điểm trên bản đồ</label>
+      <input id="place-search-input" type="search" name="q" maxlength="200" placeholder="Tìm địa điểm: Hồ Gươm, Đà Lạt..." enterkeyhint="search">
+      <button class="button button--primary" type="submit" aria-label="Tìm địa điểm">Tìm</button>
+      <ul id="place-results" class="place-results" hidden></ul>
+    </form>
+
+    <div class="topbar__spacer"></div>
+    <nav id="account-menu" class="account-menu" aria-label="Tài khoản"></nav>
+  </header>
+
+  <aside id="sidebar" class="sidebar" aria-label="Thanh bên">
+    <nav class="tabs" role="tablist">
+      <button class="tab is-active" type="button" role="tab" data-tab="explore" aria-selected="true">🌏 Khám phá</button>
+      <button class="tab" type="button" role="tab" data-tab="mine" aria-selected="false">📍 Của tôi</button>
+      <button class="tab" type="button" role="tab" data-tab="trips" aria-selected="false">🧳 Chuyến đi</button>
+    </nav>
+    <div class="sidebar__body">
+      <!-- Panel: Khám phá cộng đồng (module explore) -->
+      <section id="explore-panel" class="sidebar-section" data-panel="explore" role="tabpanel">
+        <div class="panel-head">
+          <div>
+            <h2>Khám phá cộng đồng</h2>
+            <p class="muted" id="explore-overview">Ghim đỏ là ký ức công khai của mọi người.</p>
+          </div>
+        </div>
+
+        <form id="explore-filter" class="filter-box" autocomplete="off" novalidate>
+          <label class="field">Tìm theo từ khóa
+            <span class="input-group">
+              <input type="search" name="q" maxlength="100" placeholder="Tên địa điểm, tiêu đề... (vd: ho guom)">
+              <button class="button button--primary button--sm" type="submit">Tìm</button>
+            </span>
+          </label>
+          <label class="field">Khu vực (tỉnh/thành)
+            <select name="region">
+              <option value="">Tất cả 34 tỉnh/thành</option>
+            </select>
+          </label>
+          <div class="field">Hashtag <span class="field__hint">Chọn nhiều để xem ký ức có ít nhất một hashtag đã chọn</span>
+            <div class="chips" id="explore-tags"></div>
+            <span class="input-group">
+              <input class="input" type="text" name="custom_tag" maxlength="31" placeholder="Nhập hashtag khác, vd: #bienxanh">
+              <button class="button button--sm" type="button" id="explore-add-tag">Thêm</button>
+            </span>
+          </div>
+          <p class="form-message" hidden></p>
+          <div class="explore-actions">
+            <label class="explore-viewport"><input type="checkbox" name="viewport"> Chỉ trong vùng bản đồ đang xem</label>
+            <button class="button button--ghost button--sm" type="reset">Bỏ lọc</button>
+          </div>
+        </form>
+
+        <p class="result-status" id="pin-count">Đang tải ký ức công khai...</p>
+        <div class="card-list" id="explore-list"></div>
+        <button type="button" class="button button--block load-more" id="explore-more" hidden>Tải thêm</button>
+      </section>
+      <!-- Panel: Ký ức của tôi (module memories) -->
+      <section id="memories-panel" class="sidebar-section" data-panel="mine" role="tabpanel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Ký ức của tôi</h2>
+            <p class="muted" id="mine-subtitle">Ghim xanh trên bản đồ là ký ức của bạn.</p>
+          </div>
+          <button type="button" class="button button--primary button--sm" id="mine-new" hidden>+ Ghim mới</button>
+        </div>
+
+        <div id="mine-guest" class="guest-card" hidden>
+          <h3>Lưu lại hành trình của bạn</h3>
+          <p>Đăng nhập để ghim ký ức, đính kèm ảnh, video và gom thành chuyến đi.</p>
+          <a class="button button--primary" href="/accounts/login.html">Đăng nhập</a>
+          <a class="button" href="/accounts/register.html">Đăng ký</a>
+        </div>
+
+        <div id="mine-content" hidden>
+          <form id="mine-filter" class="filter-box" autocomplete="off">
+            <label class="field">Tìm trong ký ức của tôi
+              <input type="search" name="q" maxlength="100" placeholder="Tiêu đề, địa điểm, nội dung...">
+            </label>
+            <div class="form-row">
+              <label class="field">Năm
+                <select name="year"><option value="">Mọi năm</option></select>
+              </label>
+              <label class="field">Tháng
+                <select name="month"><option value="">Mọi tháng</option></select>
+              </label>
+            </div>
+            <details class="filter-more">
+              <summary>Bộ lọc nâng cao: khoảng ngày, chế độ, hashtag</summary>
+            <div class="form-row">
+              <label class="field">Từ ngày
+                <input type="date" name="date_from">
+              </label>
+              <label class="field">Đến ngày
+                <input type="date" name="date_to">
+              </label>
+            </div>
+            <label class="field">Chế độ
+              <select name="visibility">
+                <option value="">Tất cả</option>
+                <option value="private">Riêng tư</option>
+                <option value="public">Công khai</option>
+              </select>
+            </label>
+            <div class="field">Hashtag của tôi <span class="field__hint">Chọn nhiều để xem ký ức có ít nhất một hashtag</span>
+              <div class="chips" id="mine-tags"></div>
+            </div>
+            </details>
+            <p class="form-message" hidden></p>
+            <div style="display:flex;gap:8px">
+              <button class="button button--primary button--sm" type="submit">Lọc</button>
+              <button class="button button--ghost button--sm" type="reset">Bỏ lọc</button>
+            </div>
+          </form>
+          <p class="result-status" id="mine-status"></p>
+          <div class="card-list" id="mine-list"></div>
+          <button type="button" class="button button--block load-more" id="mine-more" hidden>Tải thêm</button>
+        </div>
+      </section>
+      <!-- Panel: Chuyến đi (module memories) -->
+      <section id="trips-panel" class="sidebar-section" data-panel="trips" role="tabpanel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Chuyến đi của tôi</h2>
+            <p class="muted">Gom ký ức thành hành trình, xếp theo thời gian.</p>
+          </div>
+          <button type="button" class="button button--primary button--sm" id="trip-new" hidden>+ Chuyến đi</button>
+        </div>
+
+        <div id="trips-guest" class="guest-card" hidden>
+          <h3>Kể lại cả một hành trình</h3>
+          <p>Đăng nhập để tạo chuyến đi và xem lộ trình trên bản đồ.</p>
+          <a class="button button--primary" href="/accounts/login.html">Đăng nhập</a>
+        </div>
+
+        <div class="card-list" id="trip-list"></div>
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
+  <main id="map" class="map" aria-label="Bản đồ ký ức"></main>
+
+  <div class="map-controls" aria-label="Lớp bản đồ">
+    <label class="layer-toggle layer-toggle--mine">
+      <input type="checkbox" id="layer-mine" checked>
+      <span class="layer-toggle__dot"></span> Ký ức của tôi
+    </label>
+    <label class="layer-toggle layer-toggle--public">
+      <input type="checkbox" id="layer-public" checked>
+      <span class="layer-toggle__dot"></span> Cộng đồng
+    </label>
+    <button id="locate-me" class="icon-button icon-button--round" type="button" title="Vị trí của tôi" aria-label="Về vị trí của tôi">◎</button>
+  </div>
+  <div id="map-hint" class="map-hint">Nhấp đúp lên bản đồ (hoặc nhấn giữ trên điện thoại) để ghim ký ức mới</div>
+
+  <div id="drawer" class="drawer" hidden aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <!-- Mẫu form tạo / sửa ký ức (module memories). JS sao chép mẫu này vào ngăn kéo bên phải -->
+  <template id="memory-form-template">
+    <form id="memory-form" class="form" enctype="multipart/form-data" novalidate>
+      <div class="location-box" id="location-box">
+        <div class="field__label-row">
+          <span class="field" style="margin:0">Vị trí</span>
+          <button type="button" class="button button--soft button--sm" id="pick-on-map">🎯 Chọn trên bản đồ</button>
+        </div>
+        <div class="input-group">
+          <input class="input" type="search" id="location-query" maxlength="200" placeholder="Tìm tên địa điểm rồi nhấn Enter" enterkeyhint="search">
+          <button type="button" class="button button--sm" id="location-search">Tìm</button>
+        </div>
+        <ul class="location-results" id="location-results" hidden></ul>
+        <p class="picking-banner" id="picking-banner" hidden>Nhấp vào bản đồ để chọn vị trí...</p>
+        <p class="location-coords" id="memory-coords">Chưa chọn vị trí. Tìm địa điểm hoặc chọn trên bản đồ.</p>
+        <input type="hidden" name="latitude">
+        <input type="hidden" name="longitude">
+      </div>
+
+      <label class="field">Tên địa điểm
+        <input type="text" name="place_name" maxlength="255" required placeholder="VD: Hồ Gươm, Hà Nội">
+      </label>
+      <label class="field">Tiêu đề <span class="counter" data-counter-for="title"></span>
+        <input type="text" name="title" maxlength="200" required placeholder="Đặt tên cho kỷ niệm này">
+      </label>
+      <label class="field">Ngày diễn ra
+        <input type="date" name="memory_date" required>
+      </label>
+      <label class="field">Câu chuyện
+        <textarea name="content" rows="6" placeholder="Kể lại điều đáng nhớ: bạn đi cùng ai, thấy gì, cảm thấy thế nào..."></textarea>
+      </label>
+
+      <div class="field">
+        <span class="field__label-row">Hashtag <button type="button" class="button button--soft button--sm" id="suggest-tags">✨ Gợi ý hashtag</button></span>
+        <input type="text" name="hashtags" placeholder="#dalat #phượt (cách nhau bằng dấu cách, tối đa 10)">
+        <div class="chips" id="tag-preview"></div>
+        <div class="chips" id="tag-suggestions"></div>
+        <input type="hidden" name="ai_hashtags">
+      </div>
+
+      <div class="field">
+        <span class="field__label-row">Ảnh <span class="counter" id="image-counter">0/10 · .jpg .png .heic ≤ 5 MB</span></span>
+        <div class="upload-grid" id="image-grid"></div>
+      </div>
+
+      <div class="field">
+        <span class="field__label-row">Video <span class="counter">1 video .mp4/.mov ≤ 50 MB</span></span>
+        <div id="video-box"></div>
+      </div>
+
+      <div class="field">Ai được xem?
+        <div class="segmented" role="radiogroup">
+          <label><input type="radio" name="visibility" value="private" checked><span>🔒 Riêng tư</span></label>
+          <label><input type="radio" name="visibility" value="public"><span>🌏 Công khai</span></label>
+        </div>
+        <span class="field__hint" id="visibility-hint">Chỉ mình bạn xem được ký ức này.</span>
+      </div>
+
+      <div class="field" id="trip-field">Thuộc chuyến đi
+        <div class="trip-checks" id="trip-checks"></div>
+      </div>
+
+      <div class="progress" id="upload-progress" hidden><div class="progress__bar"></div></div>
+      <p class="form-message" hidden></p>
+    </form>
+  </template>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/shell.js"></script>
+  <script src="/accounts/js/account-menu.js"></script>
+  <script src="/memories/js/memories.js"></script>
+  <script src="/memories/js/trips.js"></script>
+  <script src="/explore/js/explore.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản trị · Bản đồ Ký ức</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+      <span class="brand__text">Bản đồ Ký ức</span>
+      <span class="brand__sub">· Quản trị</span>
+    </a>
+    <div class="topbar__spacer"></div>
+    <a class="button button--ghost" href="/ban-do">← Về bản đồ</a>
+    <nav id="account-menu" class="account-menu"></nav>
+  </header>
+
+  <main class="page admin-page" hidden>
+    <div class="stat-grid" id="admin-stats"></div>
+
+    <nav class="admin-tabs" role="tablist">
+      <button class="tab is-active" type="button" data-tab="memories">📍 Ký ức công khai</button>
+      <button class="tab" type="button" data-tab="users">👥 Tài khoản</button>
+      <button class="tab" type="button" data-tab="actions">📜 Nhật ký thao tác</button>
+    </nav>
+
+    <section class="card admin-panel" data-panel="memories">
+      <form class="admin-search" data-target="memories">
+        <input type="search" name="q" maxlength="100" placeholder="Tìm theo tiêu đề, địa điểm hoặc tên tác giả">
+        <select name="status" aria-label="Trạng thái">
+          <option value="">Mọi trạng thái</option>
+          <option value="active">Đang hiển thị</option>
+          <option value="hidden">Đã ẩn</option>
+        </select>
+        <button class="button button--primary" type="submit">Tìm</button>
+      </form>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Ký ức</th><th>Tác giả</th><th>Ngày</th><th>Trạng thái</th><th class="actions-col">Thao tác</th></tr>
+          </thead>
+          <tbody id="admin-memories"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="admin-memories-pagination"></div>
+    </section>
+
+    <section class="card admin-panel" data-panel="users" hidden>
+      <form class="admin-search" data-target="users">
+        <input type="search" name="q" maxlength="100" placeholder="Tìm theo email hoặc tên hiển thị">
+        <select name="status" aria-label="Trạng thái">
+          <option value="">Mọi trạng thái</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="locked">Đã khóa</option>
+        </select>
+        <button class="button button--primary" type="submit">Tìm</button>
+      </form>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Tên hiển thị</th><th>Email</th><th>Vai trò</th><th>Ký ức</th><th>Trạng thái</th><th class="actions-col">Thao tác</th></tr>
+          </thead>
+          <tbody id="admin-users"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="admin-users-pagination"></div>
+    </section>
+
+    <section class="card admin-panel" data-panel="actions" hidden>
+      <form class="admin-search" data-target="actions">
+        <select name="action" aria-label="Loại thao tác">
+          <option value="">Mọi thao tác</option>
+          <option value="hide_memory">Ẩn ký ức</option>
+          <option value="unhide_memory">Bỏ ẩn ký ức</option>
+          <option value="delete_memory">Xóa ký ức</option>
+          <option value="lock_user">Khóa tài khoản</option>
+          <option value="unlock_user">Mở khóa tài khoản</option>
+        </select>
+        <button class="button button--primary" type="submit">Lọc</button>
+      </form>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Thời gian</th><th>Quản trị viên</th><th>Thao tác</th><th>Đối tượng</th><th>Lý do</th></tr>
+          </thead>
+          <tbody id="admin-actions"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="admin-actions-pagination"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/js/account-menu.js"></script>
+  <script src="/admin/js/admin.js"></script>
+</body>
+</html>

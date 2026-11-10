@@ -1,0 +1,11 @@
+# Backend
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+SQLAlchemy>=2.0.30,<3.0
+PyMySQL>=1.1
+cryptography>=42.0        # PyMySQL cần để đăng nhập MySQL 8
+pydantic>=2.7,<3.0
+pydantic-settings>=2.3
+
+# Thành viên làm chức năng cần thư viện nào thì thêm vào đây
+# (vd: bcrypt, python-jose, python-multipart, Pillow, httpx...)
