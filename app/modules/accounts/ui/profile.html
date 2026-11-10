@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ cá nhân · Bản đồ Ký ức</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+      <span class="brand__text">Bản đồ Ký ức</span>
+    </a>
+    <div class="topbar__spacer"></div>
+    <a class="button button--ghost" href="/ban-do">← Về bản đồ</a>
+    <nav id="account-menu" class="account-menu"></nav>
+  </header>
+
+  <main class="page page--narrow" id="profile-page" hidden>
+    <section class="card">
+      <div class="profile-hero">
+        <span id="hero-avatar"></span>
+        <div class="profile-hero__info">
+          <h1 id="hero-name"></h1>
+          <p class="muted" id="hero-meta"></p>
+          <p class="profile-hero__bio" id="hero-bio"></p>
+        </div>
+      </div>
+      <div class="stat-grid" id="profile-stats" style="margin-top:18px"></div>
+    </section>
+
+    <nav class="profile-tabs" role="tablist">
+      <button class="tab is-active" type="button" data-tab="memories">📍 Ký ức &amp; chuyến đi</button>
+      <button class="tab" type="button" data-tab="info">👤 Thông tin</button>
+      <button class="tab" type="button" data-tab="security">🔒 Bảo mật</button>
+    </nav>
+
+    <section class="card" data-panel="memories">
+      <div class="card__head">
+        <h2>Ký ức của tôi</h2>
+        <a class="button button--primary button--sm" href="/ban-do">+ Ghim ký ức mới</a>
+      </div>
+      <form id="profile-filter" class="profile-filter">
+        <select name="year" aria-label="Năm"><option value="">Mọi năm</option></select>
+        <select name="month" aria-label="Tháng">
+          <option value="">Mọi tháng</option>
+        </select>
+        <input type="date" name="date_from" aria-label="Từ ngày">
+        <input type="date" name="date_to" aria-label="Đến ngày">
+        <button class="button button--sm" type="submit">Lọc</button>
+        <button class="button button--ghost button--sm" type="reset">Bỏ lọc</button>
+      </form>
+      <p class="form-message" id="filter-message" hidden></p>
+      <p class="result-status" id="profile-status"></p>
+      <div class="profile-memories" id="profile-memories"></div>
+      <div class="pagination" id="profile-pagination"></div>
+    </section>
+
+    <section class="card" data-panel="memories">
+      <div class="card__head"><h2>Chuyến đi của tôi</h2></div>
+      <div class="trip-cards" id="profile-trips"></div>
+    </section>
+
+    <section class="card" data-panel="info" hidden>
+      <h2>Thông tin cá nhân</h2>
+      <p class="muted" style="margin-bottom:16px">Tên hiển thị xuất hiện trên các ký ức công khai của bạn. Email không bao giờ hiển thị cho người khác.</p>
+      <form id="profile-form" class="form" data-endpoint="/api/users/me" data-method="patch" data-success="Đã cập nhật hồ sơ" novalidate>
+        <label class="field">Tên hiển thị
+          <input type="text" name="display_name" maxlength="100" required>
+        </label>
+        <label class="field" id="email-field">Email
+          <input type="email" name="email" maxlength="255" autocomplete="email">
+          <span class="field__hint" id="email-hint"></span>
+        </label>
+        <label class="field">Giới thiệu ngắn
+          <textarea name="bio" maxlength="500" rows="3" placeholder="Vài dòng về bạn..."></textarea>
+        </label>
+        <p class="form-message" hidden></p>
+        <div><button class="button button--primary" type="submit">Lưu hồ sơ</button></div>
+      </form>
+    </section>
+
+    <section class="card" data-panel="info" hidden>
+      <h2>Ảnh đại diện</h2>
+      <p class="muted" style="margin-bottom:16px">Ảnh .jpg, .png, .heic, tối đa 5 MB. Thông tin vị trí (EXIF/GPS) trong ảnh được xóa trước khi lưu.</p>
+      <form id="avatar-form" class="form" enctype="multipart/form-data" data-endpoint="/api/users/me/avatar" data-success="Đã cập nhật ảnh đại diện" novalidate>
+        <div class="avatar-editor">
+          <span id="avatar-preview"></span>
+          <label class="field" style="flex:1;min-width:220px">Chọn ảnh
+            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.heic,image/jpeg,image/png,image/heic" required>
+          </label>
+        </div>
+        <p class="form-message" hidden></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="button button--primary" type="submit">Tải ảnh lên</button>
+          <button class="button" type="button" id="avatar-remove">Gỡ ảnh</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" data-panel="security" hidden>
+      <h2 id="password-title">Đổi mật khẩu</h2>
+      <p class="muted" id="password-intro" style="margin-bottom:16px">Sau khi đổi mật khẩu, mọi phiên đăng nhập khác sẽ bị đăng xuất.</p>
+      <form id="password-form" class="form" data-endpoint="/api/auth/change-password" data-reset data-success="Đổi mật khẩu thành công" novalidate>
+        <label class="field" id="current-password-field">Mật khẩu hiện tại
+          <span class="password-field"><input type="password" name="current_password" autocomplete="current-password"></span>
+        </label>
+        <label class="field">Mật khẩu mới <span class="field__hint">Ít nhất 8 ký tự, gồm cả chữ và số</span>
+          <span class="password-field"><input type="password" name="new_password" minlength="8" autocomplete="new-password" required></span>
+        </label>
+        <label class="field">Nhập lại mật khẩu mới
+          <span class="password-field"><input type="password" name="password_confirm" autocomplete="new-password" required></span>
+        </label>
+        <p class="form-message" hidden></p>
+        <div><button class="button button--primary" type="submit">Lưu mật khẩu</button></div>
+      </form>
+    </section>
+
+    <section class="card" data-panel="security" hidden>
+      <h2>Tài khoản liên kết</h2>
+      <p class="muted" id="providers-text"></p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/js/account-menu.js"></script>
+  <script src="/accounts/js/accounts.js"></script>
+  <script src="/accounts/js/profile.js"></script>
+</body>
+</html>

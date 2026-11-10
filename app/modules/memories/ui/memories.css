@@ -1,0 +1,94 @@
+/* ---------- Thanh bên: Của tôi / Chuyến đi ---------- */
+.guest-card {
+  padding: 18px; border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--color-primary-soft), #f5f3ff);
+  border: 1px solid #dbe4ff;
+  text-align: center;
+}
+.guest-card h3 { font-size: 1rem; margin-bottom: 6px; }
+.guest-card p { margin: 0 0 14px; color: var(--color-text-2); font-size: 0.9rem; }
+.guest-card .button { margin: 0 4px; }
+
+.trip-card {
+  display: flex; flex-direction: column; gap: 4px;
+  width: 100%; padding: 12px 14px;
+  text-align: left; font: inherit; cursor: pointer;
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-surface);
+  border-left: 4px solid #7c3aed;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.trip-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.trip-card strong { font-size: 0.96rem; }
+.trip-card small { color: var(--color-muted); font-size: 0.8rem; }
+
+/* ---------- Chi tiết ký ức ---------- */
+.memory-detail { display: flex; flex-direction: column; gap: 14px; }
+.memory-detail__title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; word-break: break-word; }
+.memory-detail__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--color-muted); font-size: 0.88rem; }
+.memory-detail__place { display: flex; gap: 6px; align-items: flex-start; font-weight: 600; color: var(--color-text-2); }
+.memory-detail__author { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius); background: var(--color-bg); }
+.memory-detail__author small { display: block; color: var(--color-muted); font-size: 0.78rem; }
+.memory-content { white-space: pre-wrap; word-break: break-word; line-height: 1.7; color: var(--color-text-2); }
+.memory-content.is-empty { color: var(--color-muted); font-style: italic; }
+.notice-banner { padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; }
+.notice-banner--warning { background: var(--color-warning-soft); color: var(--color-warning); border: 1px solid #fde68a; }
+
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gallery--1 { grid-template-columns: 1fr; }
+.gallery--2 { grid-template-columns: 1fr 1fr; }
+.gallery button { padding: 0; border: none; background: none; cursor: zoom-in; border-radius: 10px; overflow: hidden; aspect-ratio: 1 / 1; }
+.gallery--1 button { aspect-ratio: 4 / 3; }
+.gallery img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
+.gallery button:hover img { transform: scale(1.04); }
+.memory-video { width: 100%; max-height: 320px; border-radius: 10px; background: #000; }
+.section-label { font-size: 0.76rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 6px; }
+
+/* ---------- Form ký ức ---------- */
+.location-box { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: var(--radius); background: var(--color-bg); border: 1px solid var(--color-border); }
+.location-box.is-missing { border-color: #fca5a5; background: var(--color-danger-soft); }
+.location-coords { font-size: 0.82rem; color: var(--color-muted); }
+.location-results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 210px; overflow-y: auto; }
+.location-results button { width: 100%; text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--color-border); background: #fff; font: inherit; cursor: pointer; }
+.location-results button:hover { border-color: var(--color-primary); }
+.location-results strong { display: block; font-size: 0.88rem; }
+.location-results small { color: var(--color-muted); font-size: 0.76rem; }
+.picking-banner { padding: 8px 10px; border-radius: 8px; background: #f5f3ff; color: #5b21b6; font-size: 0.85rem; font-weight: 600; }
+
+.upload-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.upload-item { position: relative; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; background: var(--color-surface-2); border: 1px solid var(--color-border); }
+.upload-item img { width: 100%; height: 100%; object-fit: cover; }
+.upload-item__label { position: absolute; inset: 0; display: grid; place-items: center; font-size: 0.72rem; color: var(--color-muted); text-align: center; padding: 4px; }
+.upload-item__tools { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; padding: 3px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.55)); }
+.upload-item__tools button { border: none; border-radius: 6px; background: rgba(255, 255, 255, 0.92); width: 24px; height: 24px; cursor: pointer; font-size: 0.8rem; line-height: 1; }
+.upload-item__tools button:disabled { opacity: 0.4; cursor: default; }
+.upload-item--new { outline: 2px solid #a78bfa; outline-offset: -2px; }
+.upload-add {
+  aspect-ratio: 1 / 1; border-radius: 10px; border: 2px dashed var(--color-border-strong);
+  display: grid; place-items: center; text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--color-muted); cursor: pointer; background: #fff;
+}
+.upload-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.upload-add input { display: none; }
+.video-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 10px; background: #fff; font-size: 0.88rem; }
+.video-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.trip-checks { display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; }
+.trip-checks label { display: flex; gap: 8px; align-items: center; font-weight: 500; font-size: 0.9rem; }
+.check-list { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; margin: 8px 0; }
+.check-list label { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
+.check-list label:hover { border-color: var(--color-primary); }
+.check-list small { display: block; color: var(--color-muted); }
+
+.progress { height: 6px; border-radius: 999px; background: var(--color-surface-2); overflow: hidden; }
+.progress__bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--color-primary), #7c3aed); transition: width 0.2s; }
+.counter { font-weight: 500; color: var(--color-muted); font-size: 0.78rem; }
+
+/* ---------- Chuyến đi ---------- */
+.timeline { list-style: none; margin: 0; padding: 0; position: relative; display: flex; flex-direction: column; gap: 10px; }
+.timeline::before { content: ""; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; background: #ddd6fe; }
+.timeline li { position: relative; display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; }
+.timeline__num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #7c3aed; color: #fff; font-weight: 800; font-size: 0.8rem; z-index: 1; }
+.timeline .memory-card { grid-template-columns: 56px 1fr; padding: 8px; }
+.timeline .memory-card__thumb { width: 56px; height: 56px; }
+.upload-add span,
+.upload-item__label { white-space: pre-line; word-break: break-all; }

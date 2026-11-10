@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập mạng xã hội · Bản đồ Ký ức</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/accounts/accounts.css">
+</head>
+<body class="auth-page">
+  <aside class="auth-hero">
+    <a class="brand" href="/">
+      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+      <span>Bản đồ Ký ức</span>
+    </a>
+    <div>
+      <h2>Mỗi nơi bạn đi qua là một câu chuyện đáng nhớ.</h2>
+      <p>Ghim kỷ niệm lên bản đồ, đính kèm ảnh và video, gom thành chuyến đi và khám phá ký ức của cộng đồng.</p>
+      <div class="auth-hero__features">
+        <div><b>📍</b> Ghim ký ức bằng một cú nhấp đúp</div>
+        <div><b>🧳</b> Gom ký ức thành chuyến đi theo thời gian</div>
+        <div><b>🌏</b> Khám phá ký ức công khai theo tỉnh thành, hashtag</div>
+      </div>
+    </div>
+    <small>© Bản đồ Ký ức · Dữ liệu bản đồ © OpenStreetMap</small>
+  </aside>
+  <main class="auth-main">
+    <div class="auth-card">
+      <a class="brand auth-mobile-brand" href="/">
+        <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+        <span>Bản đồ Ký ức</span>
+      </a>
+      <h1>Đang đăng nhập...</h1>
+      <p class="muted">Vui lòng chờ trong giây lát.</p>
+      <p id="page-message" class="form-message" hidden></p>
+      <p class="auth-links"><a href="/accounts/login.html">Quay lại đăng nhập</a></p>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/accounts/js/accounts.js"></script>
+  <script src="/accounts/js/oauth-callback.js"></script>
+</body>
+</html>
