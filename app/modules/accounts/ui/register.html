@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đăng ký · Bản đồ Ký ức</title>
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/accounts/accounts.css">
 </head>
-<body class="auth-page" data-guest-only>
+
+<body class="auth-page auth-page--register" data-guest-only>
   <aside class="auth-hero">
     <a class="brand" href="/">
-      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+      <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path
+            d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z" />
+        </svg></span>
       <span>Bản đồ Ký ức</span>
     </a>
     <div>
@@ -29,7 +35,10 @@
   <main class="auth-main">
     <div class="auth-card">
       <a class="brand auth-mobile-brand" href="/">
-        <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>
+        <span class="brand__logo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z" />
+          </svg></span>
         <span>Bản đồ Ký ức</span>
       </a>
       <h1>Tạo tài khoản</h1>
@@ -44,10 +53,12 @@
           <input type="email" name="email" autocomplete="email" required>
         </label>
         <label class="field">Mật khẩu <span class="field__hint">Ít nhất 8 ký tự, gồm cả chữ và số</span>
-          <span class="password-field"><input type="password" name="password" minlength="8" autocomplete="new-password" required></span>
+          <span class="password-field"><input type="password" name="password" minlength="8" autocomplete="new-password"
+              required></span>
         </label>
         <label class="field">Nhập lại mật khẩu
-          <span class="password-field"><input type="password" name="password_confirm" autocomplete="new-password" required></span>
+          <span class="password-field"><input type="password" name="password_confirm" autocomplete="new-password"
+              required></span>
         </label>
         <p class="form-message" hidden></p>
         <button class="button button--primary" type="submit">Đăng ký</button>
@@ -66,4 +77,5 @@
   <script src="/js/ui.js"></script>
   <script src="/accounts/js/accounts.js"></script>
 </body>
+
 </html>

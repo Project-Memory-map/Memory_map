@@ -1,59 +1,67 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Bản đồ Ký ức – ghim ảnh và nhật ký lên đúng nơi chúng xảy ra, xem lại hành trình và khám phá câu chuyện của người khác.">
+  <meta name="description"
+    content="Bản đồ Ký ức – ghim ảnh và nhật ký lên đúng nơi chúng xảy ra, xem lại hành trình và khám phá câu chuyện của người khác.">
   <title>Bản đồ Ký ức – Mỗi nơi bạn đi qua đều có một câu chuyện</title>
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
+
 <body class="landing">
   <!-- ================= Đầu trang + hero ================= -->
   <header class="hero" id="top">
     <svg class="hero__map" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <pattern id="blocks" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(-9)">
-          <rect width="64" height="64" fill="#efe7d6"/>
-          <rect x="5" y="5" width="54" height="54" rx="3" fill="#e9e0cc"/>
+          <rect width="64" height="64" fill="#efe7d6" />
+          <rect x="5" y="5" width="54" height="54" rx="3" fill="#e9e0cc" />
         </pattern>
         <linearGradient id="fadeLeft" x1="0" x2="1">
-          <stop offset="0" stop-color="#fbf7ee"/>
-          <stop offset=".42" stop-color="#fbf7ee" stop-opacity=".93"/>
-          <stop offset=".62" stop-color="#fbf7ee" stop-opacity=".25"/>
-          <stop offset="1" stop-color="#fbf7ee" stop-opacity="0"/>
+          <stop offset="0" stop-color="#fbf7ee" />
+          <stop offset=".42" stop-color="#fbf7ee" stop-opacity=".93" />
+          <stop offset=".62" stop-color="#fbf7ee" stop-opacity=".25" />
+          <stop offset="1" stop-color="#fbf7ee" stop-opacity="0" />
         </linearGradient>
         <linearGradient id="fadeBottom" x1="0" y1="0" x2="0" y2="1">
-          <stop offset=".72" stop-color="#fbf7ee" stop-opacity="0"/>
-          <stop offset="1" stop-color="#fbf7ee"/>
+          <stop offset=".72" stop-color="#fbf7ee" stop-opacity="0" />
+          <stop offset="1" stop-color="#fbf7ee" />
         </linearGradient>
       </defs>
-      <rect width="1200" height="760" fill="url(#blocks)"/>
+      <rect width="1200" height="760" fill="url(#blocks)" />
       <!-- công viên -->
-      <rect x="760" y="300" width="150" height="190" rx="18" fill="#cfe2c2" transform="rotate(-9 835 395)"/>
-      <rect x="1030" y="110" width="140" height="120" rx="18" fill="#cfe2c2" transform="rotate(-9 1100 170)"/>
-      <rect x="560" y="560" width="190" height="110" rx="18" fill="#d6e7cb" transform="rotate(-9 655 615)"/>
-      <rect x="380" y="40" width="120" height="90" rx="16" fill="#d6e7cb" transform="rotate(-9 440 85)"/>
+      <rect x="760" y="300" width="150" height="190" rx="18" fill="#cfe2c2" transform="rotate(-9 835 395)" />
+      <rect x="1030" y="110" width="140" height="120" rx="18" fill="#cfe2c2" transform="rotate(-9 1100 170)" />
+      <rect x="560" y="560" width="190" height="110" rx="18" fill="#d6e7cb" transform="rotate(-9 655 615)" />
+      <rect x="380" y="40" width="120" height="90" rx="16" fill="#d6e7cb" transform="rotate(-9 440 85)" />
       <!-- sông -->
-      <path d="M470 -20 C 520 90, 430 160, 520 250 S 690 330, 640 470 S 560 640, 690 800" fill="none" stroke="#b6dbef" stroke-width="34" stroke-linecap="round"/>
+      <path d="M470 -20 C 520 90, 430 160, 520 250 S 690 330, 640 470 S 560 640, 690 800" fill="none" stroke="#b6dbef"
+        stroke-width="34" stroke-linecap="round" />
       <!-- đường lớn -->
       <g fill="none" stroke-linecap="round">
-        <path d="M-20 300 C 260 230, 520 330, 760 250 S 1050 150, 1230 210" stroke="#fff" stroke-width="22"/>
-        <path d="M-20 300 C 260 230, 520 330, 760 250 S 1050 150, 1230 210" stroke="#f2d48b" stroke-width="14"/>
-        <path d="M560 780 C 700 560, 900 520, 1230 600" stroke="#fff" stroke-width="18"/>
-        <path d="M560 780 C 700 560, 900 520, 1230 600" stroke="#f2d48b" stroke-width="10"/>
-        <path d="M930 -20 C 900 200, 1000 380, 950 780" stroke="#fff" stroke-width="12"/>
+        <path d="M-20 300 C 260 230, 520 330, 760 250 S 1050 150, 1230 210" stroke="#fff" stroke-width="22" />
+        <path d="M-20 300 C 260 230, 520 330, 760 250 S 1050 150, 1230 210" stroke="#f2d48b" stroke-width="14" />
+        <path d="M560 780 C 700 560, 900 520, 1230 600" stroke="#fff" stroke-width="18" />
+        <path d="M560 780 C 700 560, 900 520, 1230 600" stroke="#f2d48b" stroke-width="10" />
+        <path d="M930 -20 C 900 200, 1000 380, 950 780" stroke="#fff" stroke-width="12" />
       </g>
-      <rect width="1200" height="760" fill="url(#fadeLeft)"/>
-      <rect width="1200" height="760" fill="url(#fadeBottom)"/>
+      <rect width="1200" height="760" fill="url(#fadeLeft)" />
+      <rect width="1200" height="760" fill="url(#fadeBottom)" />
     </svg>
 
     <nav class="nav" aria-label="Điều hướng chính">
       <a class="nav__brand" href="/">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2563eb" d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#2563eb"
+            d="M12 2C7.6 2 4 5.5 4 9.9 4 15.7 12 22 12 22s8-6.3 8-12.1C20 5.5 16.4 2 12 2zm0 10.6a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z" />
+        </svg>
         Bản đồ Ký ức
       </a>
       <div class="nav__links">
@@ -68,7 +76,8 @@
       <div class="hero__copy">
         <span class="hero__badge">✦ AI gợi ý hashtag cho mỗi ký ức</span>
         <h1>Mỗi nơi bạn đi qua<br>đều có một <em>câu chuyện.</em></h1>
-        <p class="hero__lead">Ghim ảnh và nhật ký lên đúng nơi chúng xảy ra. Xem lại hành trình của bạn — hoặc khám phá câu chuyện của người khác.</p>
+        <p class="hero__lead">Ghim ảnh và nhật ký lên đúng nơi chúng xảy ra. Xem lại hành trình của bạn — hoặc khám phá
+          câu chuyện của người khác.</p>
         <div class="hero__actions">
           <a class="btn btn--primary" id="cta-start" href="/accounts/register.html">Ghim ký ức đầu tiên</a>
           <a class="btn btn--link" href="/ban-do">Xem bản đồ cộng đồng</a>
@@ -91,7 +100,7 @@
 
         <figure class="polaroid polaroid--main">
           <div class="photo photo--sunset">
-            <svg viewBox="0 0 240 120" preserveAspectRatio="none"><circle cx="150" cy="58" r="26" fill="#ffd37a" opacity=".95"/><path d="M0 120 V92 l14-8 10 6 0-14 16-8 14 10 12-6 0 12 18-10 16 9 0-9 20-10 14 10 14-6 0 12 16-8 12 8 0-10 18-9 16 10 V120z" fill="#5b3a4a"/><g fill="#ffcf5a"><circle cx="30" cy="96" r="2.4"/><circle cx="62" cy="92" r="2.4"/><circle cx="96" cy="95" r="2.4"/><circle cx="130" cy="90" r="2.4"/><circle cx="168" cy="94" r="2.4"/><circle cx="204" cy="92" r="2.4"/></g></svg>
+            <img src="/img/hoian.jpg" alt="Hoàng hôn phố Hội An">
           </div>
           <figcaption>
             <strong>Hoàng hôn phố Hội</strong>
@@ -105,7 +114,7 @@
 
         <figure class="polaroid polaroid--side">
           <div class="photo photo--forest">
-            <svg viewBox="0 0 200 110" preserveAspectRatio="none"><g fill="#4f6b5c"><path d="M10 110 L26 52 L42 110z"/><path d="M36 110 L54 40 L72 110z"/><path d="M66 110 L80 58 L94 110z"/><path d="M90 110 L108 36 L126 110z"/><path d="M120 110 L136 54 L152 110z"/><path d="M146 110 L164 42 L182 110z"/><path d="M176 110 L190 60 L204 110z"/></g></svg>
+            <img src="/img/dalat.jpg" alt="Sương sớm Đà Lạt">
           </div>
           <figcaption>
             <strong>Sương sớm Đà Lạt</strong>
@@ -139,9 +148,10 @@
         </article>
         <article class="step">
           <div class="step__art step__art--photos">
-            <span class="mini-photo mini-photo--sea"></span>
-            <span class="mini-photo mini-photo--sunset"></span>
-            <span class="mini-note"><i></i><i></i><i></i><i class="short"></i><span class="toggle"><b></b> Công khai</span></span>
+            <img class="mini-photo mini-photo--sea" src="/img/bien.jpg" alt="">
+            <img class="mini-photo mini-photo--sunset" src="/img/hoanghon.jpg" alt="">
+            <span class="mini-note"><i></i><i></i><i></i><i class="short"></i><span class="toggle"><b></b> Công
+                khai</span></span>
           </div>
           <span class="step__num">02</span>
           <h3>Thêm ảnh &amp; nhật ký</h3>
@@ -151,14 +161,17 @@
           <div class="step__art step__art--tags">
             <span class="spark" style="left:12%;top:16%">✦</span>
             <span class="spark" style="right:14%;bottom:18%">✦</span>
-            <div class="tag-cloud"><b>#hoian</b><b>#amthuc</b><b>#hoanghon</b><b>#phoco</b><b>#dulich</b><b>#caolau</b><b>#mientrung</b></div>
+            <div class="tag-cloud">
+              <b>#hoian</b><b>#amthuc</b><b>#hoanghon</b><b>#phoco</b><b>#dulich</b><b>#caolau</b><b>#mientrung</b>
+            </div>
           </div>
           <span class="step__num">03</span>
           <h3>AI gợi ý hashtag</h3>
           <p>Gemini đọc nội dung và gợi ý hashtag; bạn chọn cái mình thích để sau này lọc lại thật nhanh.</p>
         </article>
       </div>
-      <div class="center"><a class="btn btn--primary" id="cta-free" href="/accounts/register.html">Bắt đầu miễn phí</a></div>
+      <div class="center"><a class="btn btn--primary" id="cta-free" href="/accounts/register.html">Bắt đầu miễn phí</a>
+      </div>
     </section>
 
     <!-- ================= Khám phá (dữ liệu thật) ================= -->
@@ -174,10 +187,14 @@
       <h2 class="section__title">Về nhóm</h2>
       <p class="section__lead">Đồ án môn học của nhóm 4 sinh viên Học viện Công nghệ Bưu chính Viễn thông (PTIT).</p>
       <div class="team">
-        <div class="team__card"><span>👤</span><strong>Tài khoản &amp; hồ sơ</strong><small>Đăng ký, đăng nhập Google/Facebook, quên mật khẩu, hồ sơ cá nhân</small></div>
-        <div class="team__card"><span>📍</span><strong>Ký ức &amp; chuyến đi</strong><small>Ghim ký ức, ảnh/video, hashtag, chuyến đi theo thời gian</small></div>
-        <div class="team__card"><span>🧭</span><strong>Khám phá &amp; tìm kiếm</strong><small>Bản đồ cộng đồng, lọc theo tỉnh/thành, hashtag, từ khóa</small></div>
-        <div class="team__card"><span>🛡️</span><strong>Quản trị</strong><small>Ẩn, xóa nội dung vi phạm, khóa tài khoản, nhật ký thao tác</small></div>
+        <div class="team__card"><span>👤</span><strong>Tài khoản &amp; hồ sơ</strong><small>Đăng ký, đăng nhập
+            Google/Facebook, quên mật khẩu, hồ sơ cá nhân</small></div>
+        <div class="team__card"><span>📍</span><strong>Ký ức &amp; chuyến đi</strong><small>Ghim ký ức, ảnh/video,
+            hashtag, chuyến đi theo thời gian</small></div>
+        <div class="team__card"><span>🧭</span><strong>Khám phá &amp; tìm kiếm</strong><small>Bản đồ cộng đồng, lọc theo
+            tỉnh/thành, hashtag, từ khóa</small></div>
+        <div class="team__card"><span>🛡️</span><strong>Quản trị</strong><small>Ẩn, xóa nội dung vi phạm, khóa tài
+            khoản, nhật ký thao tác</small></div>
       </div>
       <p class="team__tech">FastAPI · MySQL 8 · Leaflet + OpenStreetMap · Google Gemini</p>
     </section>
@@ -193,4 +210,5 @@
   <script src="/js/ui.js"></script>
   <script src="/js/landing.js"></script>
 </body>
+
 </html>
