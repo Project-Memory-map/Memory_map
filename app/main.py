@@ -8,9 +8,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
+from sqlalchemy.orm import sessionmaker
 
 from app.core.config import Settings, settings
-from app.core.database import Base, engine as database_engine
+from app.core.database import Base, engine as database_engine, get_db
 from app.core.errors import NotFoundException, register_exception_handlers
 from app.core.response import build_response
 from app.models import register_models
@@ -20,6 +21,7 @@ from app.modules.accounts.services.facebook_auth import FacebookAuthService
 from app.modules.admin.router import router as admin_router
 from app.modules.explore.router import router as explore_router
 from app.modules.memories.router import router as memories_router
+from app.modules.memories.images_router import router as memory_images_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -53,6 +55,16 @@ def create_app(
     application = FastAPI(title="Bản đồ Ký ức API", version="0.1.0")
     application.state.settings = configuration
     application.state.database_engine = app_engine
+    app_sessions = sessionmaker(bind=app_engine, autoflush=False, expire_on_commit=False)
+
+    def get_app_db():
+        db = app_sessions()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    application.dependency_overrides[get_db] = get_app_db
     application.state.user_repository = UserRepository(
         app_engine, configuration.database_path
     )
@@ -95,6 +107,7 @@ def create_app(
         return FileResponse(APP_DIR / "shared" / "ui" / "map.html")
 
     # API + giao diện + JS của từng module
+    application.include_router(memory_images_router)
     for module_name, module_router in MODULE_ROUTERS.items():
         application.include_router(module_router)
         module_dir = APP_DIR / "modules" / module_name

@@ -3,12 +3,37 @@ const Memories = (() => {
   const MAX_IMAGES = 10;
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
   const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
-  const IMAGE_RE = /\.(jpe?g|png|heic)$/i;
+  const IMAGE_RE = /\.(jpe?g|png|webp|gif)$/i;
+  const IMAGE_MIME = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
   const VIDEO_RE = /\.(mp4|mov)$/i;
   const TAG_RE = /^[\p{L}\p{N}_]{1,30}$/u;
 
   const layer = MemoryMap.createLayer();
   const state = { user: null, filters: {}, tags: new Set(), page: 1, myIds: new Set(), trips: [] };
+
+  function createImageLoader(objectUrls) {
+    const cache = new Map();
+    return (url, requiresAuth) => {
+      if (!requiresAuth) return Promise.resolve(url);
+      if (!cache.has(url)) {
+        cache.set(url, (async () => {
+          const token = Api.getToken();
+          const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+          if (!response.ok) {
+            if (response.status === 401) {
+              Api.setToken(null);
+              document.dispatchEvent(new CustomEvent("auth:expired"));
+            }
+            throw new Error("Không thể tải ảnh của ký ức");
+          }
+          const objectUrl = URL.createObjectURL(await response.blob());
+          objectUrls.push(objectUrl);
+          return objectUrl;
+        })());
+      }
+      return cache.get(url);
+    };
+  }
 
   /* ---------- Ghim của tôi (xanh) ---------- */
   function pinKind(pin) {
@@ -189,6 +214,13 @@ const Memories = (() => {
       Shell.setUrlParam("memory", null);
       return;
     }
+    memory.media = memory.media || [];
+    try {
+      const imageRows = await Api.get(`/api/memories/${id}/images`);
+      memory.media = [...memory.media.filter((item) => item.type !== "image"), ...imageRows];
+    } catch (error) {
+      /* Keep the media returned by the existing memory detail API as a fallback. */
+    }
     Shell.setUrlParam("memory", memory.id);
     if (fly) MemoryMap.flyTo(memory.latitude, memory.longitude, 13);
 
@@ -216,13 +248,27 @@ const Memories = (() => {
       UI.el("div", { className: "memory-detail__place" }, [UI.el("span", { text: "📍" }), UI.el("span", { text: memory.place_name })]),
     );
 
+    const imageObjectUrls = [];
     if (images.length) {
       const gallery = UI.el("div", { className: `gallery gallery--${Math.min(images.length, 3)}` });
-      const fullUrls = images.map((item) => item.url);
+      const loadImage = createImageLoader(imageObjectUrls);
+      const requiresAuth = memory.visibility !== "public" || memory.status !== "active";
       images.forEach((item, index) => {
+        const image = UI.el("img", { alt: `Ảnh ${index + 1} của ký ức`, loading: "lazy" });
+        loadImage(item.thumb_url || item.url, requiresAuth).then((url) => { image.src = url; }).catch(() => {});
         gallery.append(
-          UI.el("button", { type: "button", "aria-label": `Xem ảnh ${index + 1}`, onclick: () => UI.lightbox(fullUrls, index) }, [
-            UI.el("img", { src: images.length === 1 ? item.url : item.thumb_url || item.url, alt: `Ảnh ${index + 1} của ký ức`, loading: "lazy" }),
+          UI.el("button", {
+            type: "button",
+            "aria-label": `Xem ảnh ${index + 1}`,
+            onclick: async () => {
+              try {
+                UI.lightbox(await Promise.all(images.map((imageItem) => loadImage(imageItem.url, requiresAuth))), index);
+              } catch (error) {
+                UI.toast(error.message, "error");
+              }
+            },
+          }, [
+            image,
           ]),
         );
       });
@@ -309,6 +355,7 @@ const Memories = (() => {
       body,
       footer,
       actions: memory.is_owner ? [] : [],
+      onClose: () => imageObjectUrls.forEach((url) => URL.revokeObjectURL(url)),
     });
   }
 
@@ -481,6 +528,15 @@ const Memories = (() => {
   async function openForm({ memory = null, latitude, longitude, place_name } = {}) {
     if (!(await requireLogin())) return;
     const editing = Boolean(memory);
+    if (editing) {
+      memory.media = memory.media || [];
+      try {
+        const imageRows = await Api.get(`/api/memories/${memory.id}/images`);
+        memory.media = [...memory.media.filter((item) => item.type !== "image"), ...imageRows];
+      } catch (error) {
+        /* Keep existing image data returned by the memory detail API. */
+      }
+    }
     const container = UI.el("div");
     container.append(document.getElementById("memory-form-template").content.cloneNode(true));
     const form = container.querySelector("#memory-form");
@@ -490,6 +546,7 @@ const Memories = (() => {
     const local = {
       newImages: [],
       existingImages: editing ? memory.media.filter((item) => item.type === "image") : [],
+      originalImageOrder: editing ? memory.media.filter((item) => item.type === "image").map((item) => item.id) : [],
       removedIds: new Set(),
       existingVideo: editing ? memory.media.find((item) => item.type === "video") || null : null,
       newVideo: null,
@@ -498,6 +555,7 @@ const Memories = (() => {
       placeAuto: false,
       previewUrls: [],
     };
+    let savedMemory = null;
 
     /* --- vị trí --- */
     function setLocation(lat, lng, { reverse = true, fly = true } = {}) {
@@ -642,10 +700,17 @@ const Memories = (() => {
       const grid = $("#image-grid");
       const items = [];
       const existing = local.existingImages.filter((item) => !local.removedIds.has(item.id));
+      local.previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      local.previewUrls = [];
+      const loadImage = createImageLoader(local.previewUrls);
       existing.forEach((item, index) => {
+        const image = UI.el("img", { alt: `Ảnh ${index + 1}` });
+        loadImage(item.thumb_url || item.url, memory.visibility !== "public" || memory.status !== "active")
+          .then((url) => { image.src = url; })
+          .catch(() => {});
         items.push(
           UI.el("div", { className: "upload-item" }, [
-            UI.el("img", { src: item.thumb_url || item.url, alt: `Ảnh ${index + 1}` }),
+            image,
             UI.el("div", { className: "upload-item__tools" }, [
               UI.el("button", { type: "button", title: "Lên trước", text: "‹", disabled: index === 0, onclick: () => moveExisting(item, -1) }),
               UI.el("button", { type: "button", title: "Xóa ảnh", text: "✕", onclick: () => { local.removedIds.add(item.id); renderImages(); } }),
@@ -654,16 +719,10 @@ const Memories = (() => {
           ]),
         );
       });
-      local.previewUrls.forEach((url) => URL.revokeObjectURL(url));
-      local.previewUrls = [];
       local.newImages.forEach((file, index) => {
-        const preview = /\.heic$/i.test(file.name)
-          ? UI.el("span", { className: "upload-item__label", text: `HEIC\n${file.name}` })
-          : (() => {
-              const url = URL.createObjectURL(file);
-              local.previewUrls.push(url);
-              return UI.el("img", { src: url, alt: file.name });
-            })();
+        const url = URL.createObjectURL(file);
+        local.previewUrls.push(url);
+        const preview = UI.el("img", { src: url, alt: file.name });
         items.push(
           UI.el("div", { className: "upload-item upload-item--new", title: file.name }, [
             preview,
@@ -675,13 +734,11 @@ const Memories = (() => {
           ]),
         );
       });
-      if (imageCount() < MAX_IMAGES) {
-        const input = UI.el("input", { type: "file", accept: ".jpg,.jpeg,.png,.heic,image/jpeg,image/png,image/heic", multiple: true });
-        input.addEventListener("change", () => addImages([...input.files]));
-        items.push(UI.el("label", { className: "upload-add" }, [UI.el("span", { text: "＋\nThêm ảnh" }), input]));
-      }
+      const input = UI.el("input", { type: "file", accept: ".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif", multiple: true });
+      input.addEventListener("change", () => addImages([...input.files]));
+      items.push(UI.el("label", { className: "upload-add" }, [UI.el("span", { text: "＋\nThêm ảnh" }), input]));
       grid.replaceChildren(...items);
-      $("#image-counter").textContent = `${imageCount()}/10 · .jpg .png .heic ≤ 5 MB`;
+      $("#image-counter").textContent = `${imageCount()}/10 · .jpg .png .webp .gif ≤ 5 MB`;
     }
 
     function moveExisting(item, step) {
@@ -705,12 +762,13 @@ const Memories = (() => {
     function addImages(files) {
       UI.showMessage(message, "");
       for (const file of files) {
-        if (!IMAGE_RE.test(file.name)) {
-          UI.showMessage(message, `“${file.name}”: Định dạng tệp không được hỗ trợ`);
+        const extension = file.name.split(".").pop().toLowerCase();
+        if (!IMAGE_RE.test(file.name) || (file.type && file.type !== IMAGE_MIME[extension])) {
+          UI.showMessage(message, "Định dạng tệp không được hỗ trợ");
           continue;
         }
         if (file.size > MAX_IMAGE_BYTES) {
-          UI.showMessage(message, `“${file.name}”: Mỗi ảnh không được vượt quá 5 MB`);
+          UI.showMessage(message, "Mỗi ảnh không được vượt quá 5 MB");
           continue;
         }
         if (imageCount() >= MAX_IMAGES) {
@@ -830,11 +888,8 @@ const Memories = (() => {
       data.append("hashtags", tagResult.tags.join(" "));
       data.append("ai_hashtags", tagResult.tags.filter((tag) => local.aiTags.has(tag)).join(" "));
       data.append("trip_ids", [...tripBox.querySelectorAll("input:checked")].map((input) => input.value).join(","));
-      local.newImages.forEach((file) => data.append("images", file, file.name));
       if (local.newVideo) data.append("video", local.newVideo, local.newVideo.name);
       if (editing) {
-        data.append("remove_media_ids", [...local.removedIds].join(","));
-        data.append("image_order", local.existingImages.filter((item) => !local.removedIds.has(item.id)).map((item) => item.id).join(","));
         if (local.removeVideo && local.existingVideo) data.append("remove_video", "true");
       }
 
@@ -846,9 +901,21 @@ const Memories = (() => {
       saveButton.textContent = hasFiles ? "Đang tải lên..." : "Đang lưu...";
       progress.hidden = !hasFiles;
       try {
-        const saved = await uploadWithProgress(editing ? "PATCH" : "POST", editing ? `/api/memories/${memory.id}` : "/api/memories", data, (ratio) => {
+        const saved = savedMemory || await uploadWithProgress(editing ? "PATCH" : "POST", editing ? `/api/memories/${memory.id}` : "/api/memories", data, (ratio) => {
           bar.style.width = `${Math.round(ratio * 100)}%`;
         });
+        savedMemory = saved;
+        const orderedExistingImages = local.existingImages.filter((item) => !local.removedIds.has(item.id));
+        const imageOrderChanged = editing && orderedExistingImages.some((item, index) => item.id !== local.originalImageOrder.filter((id) => !local.removedIds.has(id))[index]);
+        if (local.newImages.length || local.removedIds.size || imageOrderChanged) {
+          const imageData = new FormData();
+          local.newImages.forEach((file) => imageData.append("images", file, file.name));
+          imageData.append("remove_media_ids", [...local.removedIds].join(","));
+          imageData.append("image_order", orderedExistingImages.map((item) => item.id).join(","));
+          await uploadWithProgress("POST", `/api/memories/${saved.id}/images`, imageData, (ratio) => {
+            bar.style.width = `${Math.round(ratio * 100)}%`;
+          });
+        }
         MemoryMap.clearTempMarker();
         UI.toast(editing ? "Đã cập nhật ký ức" : "Đã lưu ký ức", "success");
         refreshAll();
