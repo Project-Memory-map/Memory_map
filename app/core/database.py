@@ -10,13 +10,13 @@ Cách dùng trong router:
 """
 from collections.abc import Generator
 
-from sqlalchemy import BigInteger, create_engine, text
+from sqlalchemy import BigInteger, Integer, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
 # Kiểu khóa chính dùng chung cho các model (khớp BIGINT UNSIGNED trong schema.sql)
-BigIntId = BigInteger
+BigIntId = BigInteger().with_variant(Integer, "sqlite")
 
 engine = create_engine(settings.database_url, pool_pre_ping=True, pool_recycle=3600)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)

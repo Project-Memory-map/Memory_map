@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sqlite3
+from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import jwt
@@ -110,6 +111,97 @@ def test_oauth_callback_uses_state_cookie_and_exchanges_code(tmp_path) -> None:
     assert state
     assert callback.status_code == 200
     assert callback.json()["user"]["display_name"] == "Facebook User"
+
+
+def test_browser_oauth_callback_uses_existing_ui_and_shared_session_endpoint(
+    tmp_path,
+) -> None:
+    with make_client(tmp_path) as client:
+        start = client.get("/api/auth/facebook/login", follow_redirects=False)
+        state = client.cookies.get("facebook_oauth_state")
+        callback = client.get(
+            "/api/auth/facebook/callback",
+            params={"code": "valid-code", "state": state},
+            follow_redirects=False,
+        )
+        fragment = parse_qs(urlsplit(callback.headers["location"]).fragment)
+        session = client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {fragment['token'][0]}"},
+        )
+
+    assert start.status_code == 302
+    assert callback.status_code == 302
+    assert urlsplit(callback.headers["location"]).path == "/accounts/oauth-callback.html"
+    assert fragment["notice"] == ["oauth"]
+    assert session.status_code == 200
+    assert session.json()["data"]["display_name"] == "Facebook User"
+    assert session.json()["data"]["providers"] == ["facebook"]
+
+
+def test_browser_facebook_cancel_returns_to_login_with_exact_message(tmp_path) -> None:
+    with make_client(tmp_path) as client:
+        response = client.get(
+            "/api/auth/facebook/callback",
+            params={"error": "access_denied"},
+            follow_redirects=False,
+        )
+
+    destination = urlsplit(response.headers["location"])
+    assert response.status_code == 302
+    assert destination.path == "/accounts/login.html"
+    assert parse_qs(destination.query)["error"] == ["Đăng nhập Facebook chưa hoàn tất"]
+
+
+def test_browser_missing_email_redirects_to_profile_notice(tmp_path) -> None:
+    profile = FacebookProfile(
+        facebook_id="fb-no-email",
+        display_name="No Email User",
+        email=None,
+    )
+    with make_client(tmp_path, profile=profile) as client:
+        start = client.get("/api/auth/facebook/login", follow_redirects=False)
+        callback = client.get(
+            "/api/auth/facebook/callback",
+            params={"code": "valid-code", "state": client.cookies.get("facebook_oauth_state")},
+            follow_redirects=False,
+        )
+
+    destination = urlsplit(callback.headers["location"])
+    fragment = parse_qs(destination.fragment)
+    assert start.status_code == 302
+    assert destination.path == "/accounts/oauth-callback.html"
+    assert fragment["notice"] == ["need_email"]
+
+
+def test_browser_locked_account_returns_to_login_with_exact_message(tmp_path) -> None:
+    profile = FacebookProfile(
+        facebook_id="fb-locked",
+        display_name="Locked User",
+        email="locked@example.com",
+    )
+    with make_client(tmp_path, profile=profile) as client:
+        repository = client.app.state.user_repository
+        with sqlite3.connect(repository.database_path) as connection:
+            connection.execute(
+                """
+                INSERT INTO users
+                    (facebook_id, email, display_name, role, status, token_version)
+                VALUES (?, ?, ?, 'user', 'locked', 0)
+                """,
+                ("fb-locked", "locked@example.com", "Locked User"),
+            )
+        client.get("/api/auth/facebook/login", follow_redirects=False)
+        response = client.get(
+            "/api/auth/facebook/callback",
+            params={"code": "valid-code", "state": client.cookies.get("facebook_oauth_state")},
+            follow_redirects=False,
+        )
+
+    destination = urlsplit(response.headers["location"])
+    assert response.status_code == 302
+    assert destination.path == "/accounts/login.html"
+    assert parse_qs(destination.query)["error"] == ["Tài khoản của bạn đã bị khóa"]
 
 
 def test_ac2_missing_facebook_email_creates_account_without_password(tmp_path) -> None:

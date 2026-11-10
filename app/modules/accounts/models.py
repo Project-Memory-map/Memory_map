@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, SmallInteger, String, UniqueConstraint, func
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, SmallInteger, String, UniqueConstraint, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, BigIntId
@@ -11,6 +11,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(BigIntId, primary_key=True, autoincrement=True)
     email: Mapped[str | None] = mapped_column(String(255), unique=True)
+    facebook_id: Mapped[str | None] = mapped_column(String(191), unique=True)
     password_hash: Mapped[str | None] = mapped_column(String(255))
     display_name: Mapped[str] = mapped_column(String(100))
     avatar_path: Mapped[str | None] = mapped_column(String(500))
@@ -18,8 +19,8 @@ class User(Base):
     role: Mapped[str] = mapped_column(Enum("user", "admin"), default="user")
     status: Mapped[str] = mapped_column(Enum("active", "locked"), default="active")
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime)
-    token_version: Mapped[int] = mapped_column(Integer, default=0)
-    failed_login_count: Mapped[int] = mapped_column(SmallInteger, default=0)
+    token_version: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
+    failed_login_count: Mapped[int] = mapped_column(SmallInteger, default=0, server_default=text("0"))
     first_failed_at: Mapped[datetime | None] = mapped_column(DateTime)
     login_locked_until: Mapped[datetime | None] = mapped_column(DateTime)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime)

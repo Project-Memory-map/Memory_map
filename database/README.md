@@ -6,6 +6,7 @@ Folder chứa lược đồ cơ sở dữ liệu MySQL của dự án **Bản đ
 |---|---|
 | `schema.sql` | Tạo database `ban_do_ky_uc`, các bảng, trigger và view |
 | `seed_regions.sql` | Nạp 34 tỉnh/thành vào bảng `regions` (dùng cho bộ lọc khu vực). Chạy **sau** `schema.sql` |
+| `migrations/20261111_add_facebook_id.sql` | Cập nhật database cũ để lưu ID Facebook trên tài khoản; chỉ chạy một lần |
 
 Thiết kế dựa trên `schema.sql` v0.3 và các quy tắc nghiệp vụ BR-xx trong repo đặc tả [Dac_ta_du_an](https://github.com/Project-Memory-map/Dac_ta_du_an) (`srs/08-quy-tac-nghiep-vu.md`).
 
@@ -49,6 +50,7 @@ mysql -u root -p --default-character-set=utf8mb4 < database/schema.sql
    ```
    rồi chạy lại `schema.sql`.
 3. **Khi có người sửa `schema.sql` và push lên**, các thành viên khác `git pull` về rồi chạy lại file để database trên máy mình giống nhau.
+   Với database đã tạo trước US-ACC-004, chạy thêm migration Facebook một lần trong Workbench.
 4. **Không chạy file bằng Python `execute()` một lần.** Phần trigger dùng lệnh `DELIMITER`, mà lệnh này chỉ Workbench và mysql CLI hiểu.
 5. **Luôn dùng charset `utf8mb4`.** Thiếu nó thì hashtag tiếng Việt bị trigger từ chối và thông báo lỗi bị vỡ font.
 
