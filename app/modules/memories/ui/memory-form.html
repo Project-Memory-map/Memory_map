@@ -1,38 +1,78 @@
 <div class="drawer__header">
-  <h2>Ghim ký ức mới</h2>
-  <button type="button" class="icon-button" data-close-drawer aria-label="Đóng">✕</button>
+  <h2>Tạo ký ức bằng địa điểm</h2>
+
+  <button type="button" data-close-drawer aria-label="Đóng">
+    ✕
+  </button>
 </div>
-<form id="memory-form" class="form" enctype="multipart/form-data">
-  <label class="field">Tiêu đề
-    <input type="text" name="title" maxlength="200" required>
+
+<form id="memory-form" novalidate>
+  <label class="field">
+    Tìm địa điểm
+    <input
+      id="location-query"
+      type="search"
+      maxlength="200"
+      placeholder="Ví dụ: Hồ Gươm"
+    >
   </label>
-  <label class="field">Địa điểm
-    <input type="text" name="place_name" maxlength="255" required>
+
+  <button id="location-search" class="button" type="button">
+    Tìm kiếm
+  </button>
+
+  <p class="muted">
+    Chỉ nhập tên địa điểm, không nhập thông tin cá nhân.
+  </p>
+
+  <p id="location-message" role="status"></p>
+  <div id="location-results"></div>
+
+  <small>
+    Dữ liệu địa điểm ©
+    <a
+      href="https://www.openstreetmap.org/copyright"
+      target="_blank"
+      rel="noopener"
+    >OpenStreetMap contributors</a>
+  </small>
+
+  <label class="field">
+    Tên địa điểm
+    <input name="place_name" maxlength="255" required>
   </label>
-  <p id="memory-coords" class="muted memory-coords"></p>
-  <input type="hidden" name="latitude">
-  <input type="hidden" name="longitude">
-  <label class="field">Ngày
-    <input type="date" name="memory_date" required>
+
+  <input name="latitude" type="hidden">
+  <input name="longitude" type="hidden">
+
+  <p id="memory-coords">Chưa chọn vị trí.</p>
+
+  <label class="field">
+    Tiêu đề
+    <input name="title" maxlength="200" required>
   </label>
-  <label class="field">Câu chuyện
-    <textarea name="content" rows="5" required></textarea>
+
+  <label class="field">
+    Ngày diễn ra
+    <input name="memory_date" type="date" required>
   </label>
-  <label class="field">Hashtag (cách nhau bằng dấu cách, tối đa 10)
-    <input type="text" name="hashtags" placeholder="#dalat #phuot">
+
+  <label class="field">
+    Câu chuyện
+    <textarea
+      name="content"
+      rows="8"
+      maxlength="100000"
+    ></textarea>
   </label>
-  <label class="field">Ảnh (tối đa 10 ảnh, mỗi ảnh ≤ 5 MB)
-    <input type="file" name="images" accept=".jpg,.jpeg,.png,.heic" multiple>
-  </label>
-  <label class="field">Video (1 video .mp4/.mov, ≤ 50 MB)
-    <input type="file" name="video" accept=".mp4,.mov">
-  </label>
-  <label class="field">Chế độ
-    <select name="visibility">
-      <option value="private" selected>Riêng tư</option>
-      <option value="public">Công khai</option>
-    </select>
-  </label>
-  <p class="form-message" hidden></p>
-  <button class="button" type="submit">Lưu ký ức</button>
+
+  <p>
+    Chế độ lưu: <strong>Riêng tư</strong> — chỉ bạn xem được.
+  </p>
+
+  <p class="form-message" role="alert" hidden></p>
+
+  <button class="button button--primary" type="submit">
+    Lưu ký ức
+  </button>
 </form>
