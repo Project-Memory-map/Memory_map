@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -119,6 +120,12 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def handle_http_exception(request: Request, exc: StarletteHTTPException):
+        if exc.status_code == 401:
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": str(exc.detail)},
+                headers=exc.headers,
+            )
         message = "Không tìm thấy đường dẫn" if exc.status_code == 404 else str(exc.detail)
         return build_response(exc.status_code, message, request, error="HTTP_ERROR")
 

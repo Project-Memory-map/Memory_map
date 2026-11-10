@@ -144,6 +144,27 @@ def current_user_profile(
     return build_response(200, "Thông tin người dùng", request, data=data)
 
 
+@router.post("/api/auth/logout")
+@router.post("/api/accounts/logout", include_in_schema=False)
+def logout(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """End the browser session; BR-20 keeps token revocation client-side."""
+    response = JSONResponse(content={"message": "Đăng xuất thành công"})
+    response.delete_cookie(
+        "access_token",
+        path="/",
+        httponly=True,
+        secure=_cookie_secure(request),
+        samesite="lax",
+    )
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 @router.get("/api/auth/facebook/login")
 @router.get("/api/accounts/facebook/login", include_in_schema=False)
 def facebook_login(request: Request):

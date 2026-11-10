@@ -72,7 +72,14 @@ def create_app(
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        if not request.url.path.startswith("/api"):
+        if request.url.path.startswith("/api/") or request.url.path in {
+            "/ban-do",
+            "/accounts/profile.html",
+        }:
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        elif not request.url.path.startswith("/api"):
             response.headers.setdefault("Cache-Control", "no-cache")
         return response
 

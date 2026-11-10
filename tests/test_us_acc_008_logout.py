@@ -35,6 +35,14 @@ def authenticated_client(tmp_path):
             "email": current_user.email,
         }
 
+    private_route = app.router.routes.pop()
+    fallback_index = next(
+        index
+        for index, route in enumerate(app.router.routes)
+        if getattr(route, "path", None) == "/api/{path:path}"
+    )
+    app.router.routes.insert(fallback_index, private_route)
+
     with TestClient(app) as client:
         with sqlite3.connect(settings.database_path) as connection:
             cursor = connection.execute(
@@ -70,14 +78,16 @@ def authenticated_client(tmp_path):
         yield client, token, user_id
 
 
+@pytest.mark.parametrize("logout_path", ["/api/accounts/logout", "/api/auth/logout"])
 def test_logout_with_valid_token_returns_json_and_clears_cookie(
     authenticated_client,
+    logout_path: str,
 ) -> None:
     client, token, _ = authenticated_client
     client.cookies.set("access_token", token)
 
     response = client.post(
-        "/api/accounts/logout",
+        logout_path,
         headers={"Authorization": f"Bearer {token}"},
     )
 
@@ -129,6 +139,19 @@ def test_old_token_is_rejected_when_token_version_changes(
     assert response.status_code == 401
     assert response.json() == {"detail": "Vui lòng đăng nhập để tiếp tục"}
     assert "email" not in response.json()
+
+
+def test_profile_page_is_marked_no_store_for_browser_back(
+    authenticated_client,
+) -> None:
+    client, _, _ = authenticated_client
+
+    response = client.get("/accounts/profile.html")
+
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == CACHE_CONTROL
+    assert response.headers["pragma"] == "no-cache"
+    assert response.headers["expires"] == "0"
 
 
 @pytest.mark.parametrize("token", ["not-a-jwt", "expired"])

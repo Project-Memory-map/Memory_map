@@ -25,6 +25,13 @@ const Api = (() => {
     }
   }
 
+  window.addEventListener("storage", (event) => {
+    if ((event.key === TOKEN_KEY || event.key === null) && event.newValue === null) {
+      setToken(null);
+      document.dispatchEvent(new CustomEvent("auth:expired"));
+    }
+  });
+
   function buildUrl(path, query) {
     const url = new URL(BASE_URL + path, window.location.origin);
     if (query) {
@@ -37,7 +44,7 @@ const Api = (() => {
     return url;
   }
 
-  async function request(method, path, { query, body, formData, signal } = {}) {
+  async function request(method, path, { query, body, formData, signal, keepalive } = {}) {
     const headers = { Accept: "application/json" };
     const token = getToken();
     if (token) {
@@ -54,7 +61,7 @@ const Api = (() => {
 
     let response;
     try {
-      response = await fetch(buildUrl(path, query), { method, headers, body: payload, signal });
+      response = await fetch(buildUrl(path, query), { method, headers, body: payload, signal, keepalive });
     } catch (networkError) {
       if (networkError.name === "AbortError") {
         throw networkError;
@@ -87,6 +94,10 @@ const Api = (() => {
     if (token) headers.Authorization = `Bearer ${token}`;
     const response = await fetch(buildUrl(path, options && options.query), { method, headers });
     const result = await response.json().catch(() => ({}));
+    if (response.status === 401 && token) {
+      setToken(null);
+      document.dispatchEvent(new CustomEvent("auth:expired"));
+    }
     if (!response.ok) {
       const error = new Error(result.message || "Đã có lỗi xảy ra");
       error.status = response.status;
