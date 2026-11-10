@@ -4,7 +4,7 @@ import hmac
 import secrets
 from collections.abc import Awaitable, Callable
 
-from fastapi import APIRouter, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import RedirectResponse
 
 from app.core.config import Settings
@@ -14,6 +14,7 @@ from app.core.database import (
     UserRepository,
 )
 from app.core.security import MissingJWTSecretError, create_access_token
+from app.modules.accounts.deps import get_current_user
 from app.modules.accounts.schemas import FacebookTokenRequest
 from app.modules.accounts.services.facebook_auth import (
     FacebookAuthService,
@@ -23,6 +24,7 @@ from app.modules.accounts.services.facebook_auth import (
 
 router = APIRouter()
 STATE_COOKIE = "facebook_oauth_state"
+ACCESS_TOKEN_COOKIE = "access_token"
 OAUTH_INCOMPLETE_MESSAGE = "Đăng nhập Facebook chưa hoàn tất"
 LOCKED_ACCOUNT_MESSAGE = "Tài khoản của bạn đã bị khóa"
 
@@ -155,3 +157,17 @@ async def facebook_token_login(
             body.access_token
         ),
     )
+
+
+@router.post("/logout", dependencies=[Depends(get_current_user)])
+def logout(
+    request: Request,
+    response: Response,
+) -> dict[str, str]:
+    response.delete_cookie(
+        ACCESS_TOKEN_COOKIE,
+        httponly=True,
+        secure=_settings(request).cookie_secure,
+        samesite="lax",
+    )
+    return {"message": "Đăng xuất thành công"}

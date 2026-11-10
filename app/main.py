@@ -26,6 +26,18 @@ def create_app(
     app.state.settings = app_settings
     app.state.user_repository = UserRepository(app_settings.database_path)
     app.state.facebook_auth = facebook_auth or FacebookAuthService(app_settings)
+
+    @app.middleware("http")
+    async def disable_api_cache(request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, max-age=0"
+            )
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
     app.include_router(accounts_router, prefix="/api/accounts")
     return app
 

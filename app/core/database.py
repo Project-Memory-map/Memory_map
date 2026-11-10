@@ -124,6 +124,14 @@ class UserRepository:
                 connection.rollback()
                 raise
 
+    def get_by_id(self, user_id: int) -> User | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT * FROM users WHERE id = ?",
+                (user_id,),
+            ).fetchone()
+        return self._to_user(row) if row is not None else None
+
     @staticmethod
     def _ensure_unlocked(user: User) -> None:
         if user.status == "locked":
