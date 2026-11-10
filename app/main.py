@@ -22,6 +22,7 @@ from app.modules.admin.router import router as admin_router
 from app.modules.explore.router import router as explore_router
 from app.modules.memories.router import router as memories_router
 from app.modules.memories.images_router import router as memory_images_router
+from app.modules.memories.video_router import router as memory_videos_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -108,6 +109,7 @@ def create_app(
 
     # API + giao diện + JS của từng module
     application.include_router(memory_images_router)
+    application.include_router(memory_videos_router)
     for module_name, module_router in MODULE_ROUTERS.items():
         application.include_router(module_router)
         module_dir = APP_DIR / "modules" / module_name

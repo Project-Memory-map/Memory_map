@@ -6,6 +6,7 @@ const Memories = (() => {
   const IMAGE_RE = /\.(jpe?g|png|webp|gif)$/i;
   const IMAGE_MIME = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
   const VIDEO_RE = /\.(mp4|mov)$/i;
+  const VIDEO_MIME = { mp4: "video/mp4", mov: "video/quicktime" };
   const TAG_RE = /^[\p{L}\p{N}_]{1,30}$/u;
 
   const layer = MemoryMap.createLayer();
@@ -33,6 +34,43 @@ const Memories = (() => {
       }
       return cache.get(url);
     };
+  }
+
+  async function loadMemoryVideo(memory) {
+    memory.media = memory.media || [];
+    try {
+      const video = await Api.get(`/api/memories/${memory.id}/video`);
+      memory.media = [...memory.media.filter((item) => item.type !== "video"), ...(video ? [video] : [])];
+    } catch (error) {
+      /* Keep the video data returned by the existing memory detail API. */
+    }
+  }
+
+  function videoStreamUrl(url) {
+    try {
+      const parsed = new URL(url, window.location.origin);
+      if (parsed.origin === window.location.origin && /^\/api\/media\/\d+$/.test(parsed.pathname)) {
+        parsed.pathname += "/stream";
+      }
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch (error) {
+      return url;
+    }
+  }
+
+  async function loadProtectedVideo(url, objectUrls) {
+    const token = Api.getToken();
+    const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!response.ok) {
+      if (response.status === 401) {
+        Api.setToken(null);
+        document.dispatchEvent(new CustomEvent("auth:expired"));
+      }
+      throw new Error("Không thể tải video của ký ức");
+    }
+    const objectUrl = URL.createObjectURL(await response.blob());
+    objectUrls.push(objectUrl);
+    return objectUrl;
   }
 
   /* ---------- Ghim của tôi (xanh) ---------- */
@@ -221,12 +259,14 @@ const Memories = (() => {
     } catch (error) {
       /* Keep the media returned by the existing memory detail API as a fallback. */
     }
+    await loadMemoryVideo(memory);
     Shell.setUrlParam("memory", memory.id);
     if (fly) MemoryMap.flyTo(memory.latitude, memory.longitude, 13);
 
     const images = memory.media.filter((item) => item.type === "image");
     const video = memory.media.find((item) => item.type === "video");
     const body = UI.el("article", { className: "memory-detail" });
+    const videoObjectUrls = [];
 
     if (memory.is_owner && memory.hidden_by_admin) {
       body.append(UI.el("div", { className: "notice-banner notice-banner--warning", text: "⚠️ Đã bị quản trị viên ẩn — ký ức này không còn hiển thị trên bản đồ cộng đồng." }));
@@ -275,7 +315,24 @@ const Memories = (() => {
       body.append(gallery);
     }
     if (video) {
-      body.append(UI.el("video", { className: "memory-video", src: video.url, controls: true, preload: "metadata", playsinline: true }));
+      const player = UI.el("video", { className: "memory-video", controls: true, preload: "metadata", playsinline: true });
+      const requiresAuth = memory.visibility !== "public" || memory.status !== "active";
+      const source = videoStreamUrl(video.url);
+      if (requiresAuth) {
+        loadProtectedVideo(source, videoObjectUrls)
+          .then((url) => {
+            if (player.isConnected) player.src = url;
+            else {
+              URL.revokeObjectURL(url);
+              const objectUrlIndex = videoObjectUrls.indexOf(url);
+              if (objectUrlIndex >= 0) videoObjectUrls.splice(objectUrlIndex, 1);
+            }
+          })
+          .catch((error) => UI.toast(error.message, "error"));
+      } else {
+        player.src = source;
+      }
+      body.append(player);
     }
 
     body.append(
@@ -355,7 +412,10 @@ const Memories = (() => {
       body,
       footer,
       actions: memory.is_owner ? [] : [],
-      onClose: () => imageObjectUrls.forEach((url) => URL.revokeObjectURL(url)),
+      onClose: () => {
+        imageObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+        videoObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+      },
     });
   }
 
@@ -536,6 +596,7 @@ const Memories = (() => {
       } catch (error) {
         /* Keep existing image data returned by the memory detail API. */
       }
+      await loadMemoryVideo(memory);
     }
     const container = UI.el("div");
     container.append(document.getElementById("memory-form-template").content.cloneNode(true));
@@ -554,8 +615,11 @@ const Memories = (() => {
       aiTags: new Set(editing ? Object.entries(memory.hashtag_sources || {}).filter(([, source]) => source === "ai").map(([name]) => name) : []),
       placeAuto: false,
       previewUrls: [],
+      videoObjectUrls: [],
     };
     let savedMemory = null;
+    let imageUploadSaved = false;
+    let videoUploadSaved = false;
 
     /* --- vị trí --- */
     function setLocation(lat, lng, { reverse = true, fly = true } = {}) {
@@ -713,7 +777,7 @@ const Memories = (() => {
             image,
             UI.el("div", { className: "upload-item__tools" }, [
               UI.el("button", { type: "button", title: "Lên trước", text: "‹", disabled: index === 0, onclick: () => moveExisting(item, -1) }),
-              UI.el("button", { type: "button", title: "Xóa ảnh", text: "✕", onclick: () => { local.removedIds.add(item.id); renderImages(); } }),
+              UI.el("button", { type: "button", title: "Xóa ảnh", text: "✕", onclick: () => { local.removedIds.add(item.id); imageUploadSaved = false; renderImages(); } }),
               UI.el("button", { type: "button", title: "Ra sau", text: "›", disabled: index === existing.length - 1, onclick: () => moveExisting(item, 1) }),
             ]),
           ]),
@@ -728,7 +792,7 @@ const Memories = (() => {
             preview,
             UI.el("div", { className: "upload-item__tools" }, [
               UI.el("button", { type: "button", title: "Lên trước", text: "‹", disabled: index === 0, onclick: () => moveNew(index, -1) }),
-              UI.el("button", { type: "button", title: "Bỏ ảnh", text: "✕", onclick: () => { local.newImages.splice(index, 1); renderImages(); } }),
+              UI.el("button", { type: "button", title: "Bỏ ảnh", text: "✕", onclick: () => { local.newImages.splice(index, 1); imageUploadSaved = false; renderImages(); } }),
               UI.el("button", { type: "button", title: "Ra sau", text: "›", disabled: index === local.newImages.length - 1, onclick: () => moveNew(index, 1) }),
             ]),
           ]),
@@ -749,6 +813,7 @@ const Memories = (() => {
       const a = local.existingImages.indexOf(item);
       const b = local.existingImages.indexOf(target);
       [local.existingImages[a], local.existingImages[b]] = [local.existingImages[b], local.existingImages[a]];
+      imageUploadSaved = false;
       renderImages();
     }
 
@@ -756,6 +821,7 @@ const Memories = (() => {
       const target = index + step;
       if (target < 0 || target >= local.newImages.length) return;
       [local.newImages[index], local.newImages[target]] = [local.newImages[target], local.newImages[index]];
+      imageUploadSaved = false;
       renderImages();
     }
 
@@ -776,6 +842,7 @@ const Memories = (() => {
           break;
         }
         local.newImages.push(file);
+        imageUploadSaved = false;
       }
       renderImages();
     }
@@ -788,8 +855,26 @@ const Memories = (() => {
         box.replaceChildren(
           UI.el("div", { className: "video-row" }, [
             UI.el("span", { text: "🎬 Video hiện tại" }),
-            UI.el("a", { href: local.existingVideo.url, target: "_blank", rel: "noopener", text: "Xem" }),
-            UI.el("button", { type: "button", className: "button button--sm", text: "Xóa video", onclick: () => { local.removeVideo = true; renderVideo(); } }),
+            UI.el("a", {
+              href: videoStreamUrl(local.existingVideo.url),
+              target: "_blank",
+              rel: "noopener",
+              text: "Xem",
+              onclick: async (event) => {
+                if (memory.visibility === "public" && memory.status === "active") return;
+                event.preventDefault();
+                const playbackWindow = window.open("about:blank", "_blank");
+                if (!playbackWindow) return UI.toast("Trình duyệt đã chặn cửa sổ phát video", "error");
+                playbackWindow.opener = null;
+                try {
+                  playbackWindow.location.href = await loadProtectedVideo(videoStreamUrl(local.existingVideo.url), local.videoObjectUrls);
+                } catch (error) {
+                  playbackWindow.close();
+                  UI.toast(error.message, "error");
+                }
+              },
+            }),
+            UI.el("button", { type: "button", className: "button button--sm", text: "Xóa video", onclick: () => { local.removeVideo = true; videoUploadSaved = false; renderVideo(); } }),
           ]),
         );
         return;
@@ -798,7 +883,7 @@ const Memories = (() => {
         box.replaceChildren(
           UI.el("div", { className: "video-row" }, [
             UI.el("span", { text: `🎬 ${local.newVideo.name} · ${(local.newVideo.size / 1048576).toFixed(1)} MB` }),
-            UI.el("button", { type: "button", className: "button button--sm", text: "Bỏ", onclick: () => { local.newVideo = null; renderVideo(); } }),
+            UI.el("button", { type: "button", className: "button button--sm", text: "Bỏ", onclick: () => { local.newVideo = null; videoUploadSaved = false; renderVideo(); } }),
           ]),
         );
         return;
@@ -808,7 +893,8 @@ const Memories = (() => {
         const file = input.files[0];
         UI.showMessage(message, "");
         if (!file) return;
-        if (!VIDEO_RE.test(file.name)) {
+        const extension = file.name.split(".").pop().toLowerCase();
+        if (!VIDEO_RE.test(file.name) || (file.type && file.type !== VIDEO_MIME[extension])) {
           UI.showMessage(message, "Định dạng tệp không được hỗ trợ");
           input.value = "";
           return;
@@ -819,6 +905,7 @@ const Memories = (() => {
           return;
         }
         local.newVideo = file;
+        videoUploadSaved = false;
         renderVideo();
       });
       box.replaceChildren(UI.el("label", { className: "field", style: { fontWeight: 400 } }, [input]));
@@ -888,15 +975,11 @@ const Memories = (() => {
       data.append("hashtags", tagResult.tags.join(" "));
       data.append("ai_hashtags", tagResult.tags.filter((tag) => local.aiTags.has(tag)).join(" "));
       data.append("trip_ids", [...tripBox.querySelectorAll("input:checked")].map((input) => input.value).join(","));
-      if (local.newVideo) data.append("video", local.newVideo, local.newVideo.name);
-      if (editing) {
-        if (local.removeVideo && local.existingVideo) data.append("remove_video", "true");
-      }
 
       const saveButton = document.getElementById("memory-save");
       const progress = $("#upload-progress");
       const bar = progress.querySelector(".progress__bar");
-      const hasFiles = local.newImages.length || local.newVideo;
+      const hasFiles = local.newImages.length || local.newVideo || local.removeVideo;
       saveButton.disabled = true;
       saveButton.textContent = hasFiles ? "Đang tải lên..." : "Đang lưu...";
       progress.hidden = !hasFiles;
@@ -907,7 +990,7 @@ const Memories = (() => {
         savedMemory = saved;
         const orderedExistingImages = local.existingImages.filter((item) => !local.removedIds.has(item.id));
         const imageOrderChanged = editing && orderedExistingImages.some((item, index) => item.id !== local.originalImageOrder.filter((id) => !local.removedIds.has(id))[index]);
-        if (local.newImages.length || local.removedIds.size || imageOrderChanged) {
+        if (!imageUploadSaved && (local.newImages.length || local.removedIds.size || imageOrderChanged)) {
           const imageData = new FormData();
           local.newImages.forEach((file) => imageData.append("images", file, file.name));
           imageData.append("remove_media_ids", [...local.removedIds].join(","));
@@ -915,6 +998,17 @@ const Memories = (() => {
           await uploadWithProgress("POST", `/api/memories/${saved.id}/images`, imageData, (ratio) => {
             bar.style.width = `${Math.round(ratio * 100)}%`;
           });
+          imageUploadSaved = true;
+        }
+        const videoChanged = local.newVideo || (local.removeVideo && local.existingVideo);
+        if (!videoUploadSaved && videoChanged) {
+          const videoData = new FormData();
+          if (local.newVideo) videoData.append("video", local.newVideo, local.newVideo.name);
+          if (local.removeVideo && local.existingVideo) videoData.append("remove_video", "true");
+          await uploadWithProgress("POST", `/api/memories/${saved.id}/video`, videoData, (ratio) => {
+            bar.style.width = `${Math.round(ratio * 100)}%`;
+          });
+          videoUploadSaved = true;
         }
         MemoryMap.clearTempMarker();
         UI.toast(editing ? "Đã cập nhật ký ức" : "Đã lưu ký ức", "success");
@@ -946,6 +1040,7 @@ const Memories = (() => {
         MemoryMap.clearTempMarker();
         MemoryMap.cancelPickMode();
         local.previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        local.videoObjectUrls.forEach((url) => URL.revokeObjectURL(url));
       },
     });
     if (!form.elements.latitude.value) $("#location-query").focus();
