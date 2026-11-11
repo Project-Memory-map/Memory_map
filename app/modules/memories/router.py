@@ -28,3 +28,55 @@ from fastapi import APIRouter
 router = APIRouter(tags=["M2 - Ký ức"])
 
 # TODO: thêm các endpoint theo bảng trên
+from pydantic import BaseModel
+from typing import Optional
+from fastapi import HTTPException, status, Depends
+from sqlalchemy.orm import Session
+
+# Định nghĩa Schema trực tiếp tại đây cho US-MEM-006
+class MemoryUpdateRequest(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    location_name: Optional[str] = None
+    is_public: Optional[bool] = None
+
+# API US-MEM-006: Sửa nội dung ký ức theo đúng bảng quy ước của nhóm (PATCH /api/memories/{id})
+@router.patch("/api/memories/{id}")
+def update_memory_content(
+    id: int,
+    payload: MemoryUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)  # Hàm lấy user hiện tại đã có sẵn trong file hoặc deps
+):
+    # 1. Tìm ký ức theo id trong database
+    memory = db.query(Memory).filter(Memory.id == id).first()
+    if not memory:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy ký ức"
+        )
+
+    # 2. Kiểm tra quyền sở hữu (FR-2.5: Chỉ chủ sở hữu được sửa)
+    if getattr(memory, "user_id", None) != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền sửa ký ức này"
+        )
+
+    # 3. Cập nhật các trường dữ liệu nếu có truyền lên
+    if payload.title is not None:
+        memory.title = payload.title.strip()
+    if payload.description is not None:
+        memory.description = payload.description.strip()
+    if payload.location_name is not None:
+        memory.location_name = payload.location_name.strip()
+    if payload.is_public is not None:
+        memory.is_public = payload.is_public
+
+    db.commit()
+    db.refresh(memory)
+
+    return {
+        "message": "Cập nhật ký ức thành công",
+        "data": memory
+    }
