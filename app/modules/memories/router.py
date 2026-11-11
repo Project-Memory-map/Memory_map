@@ -32,6 +32,10 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.modules.accounts.models import User
+from app.modules.memories.models import Memory
+from app.modules.accounts.deps import get_current_user
 
 # Định nghĩa Schema trực tiếp tại đây cho US-MEM-006
 class MemoryUpdateRequest(BaseModel):
