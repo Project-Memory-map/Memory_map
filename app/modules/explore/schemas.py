@@ -11,8 +11,13 @@ class BoundingBox(BaseModel):
 
     @model_validator(mode="after")
     def check_order(self):
-        if self.south > self.north or self.west > self.east:
-            raise ValueError("Vùng bản đồ không hợp lệ")
+        if self.south > self.north:
+            raise ValueError(
+                "Vùng bản đồ không hợp lệ"
+            )
+
+        # west > east được phép khi vùng nhìn
+        # đi qua kinh tuyến ±180 độ.
         return self
 
 

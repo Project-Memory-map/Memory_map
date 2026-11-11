@@ -1,0 +1,5 @@
+# Thay /srv/memory-map bằng thư mục triển khai thật.
+# Chạy crontab -e bằng tài khoản chạy ứng dụng rồi thêm dòng dưới.
+# Chạy lúc 03:00 ngày 1 hàng tháng, theo múi giờ máy chủ.
+
+0 3 1 * * cd /srv/memory-map && .venv/bin/python -m app.modules.memories.cleanup_media --apply >> /srv/memory-map/cleanup-media.log 2>&1

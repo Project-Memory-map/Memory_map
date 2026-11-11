@@ -1,5 +1,67 @@
 .explore-filter {
   margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.explore-filter input:not([type="checkbox"]),
+.explore-filter select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.explore-check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.explore-check input {
+  width: auto;
+}
+
+.explore-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#explore-reset {
+  background: #eef2f6;
+  color: #243247;
+}
+
+#explore-more[hidden] {
+  display: none !important;
+}
+
+.explore-card {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  background: white;
+  color: #243247;
+  border: 1px solid #d0d7de;
+  border-left: 4px solid #d1242f;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.explore-card:hover {
+  background: #f6f8fa;
+}
+
+.explore-card strong,
+.explore-card small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.explore-card small {
+  margin-top: 5px;
+  color: #57606a;
 }
 
 .pin-popup h3 {
@@ -8,6 +70,30 @@
 }
 
 .pin-popup p {
-  margin: 2px 0;
-  color: var(--color-muted);
+  margin: 4px 0;
+}
+
+.public-detail {
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.public-detail::backdrop {
+  background: #0006;
+}
+
+.public-detail p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.public-detail img,
+.public-detail video {
+  max-width: 100%;
+  display: block;
+  margin: 12px auto;
 }

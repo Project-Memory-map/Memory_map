@@ -9,20 +9,28 @@ const MemoryMap = (() => {
   function init(elementId) {
     map = L.map(elementId, {
       doubleClickZoom: false,
-    }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    }).setView(
+      DEFAULT_CENTER,
+      DEFAULT_ZOOM
+    );
 
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
+    L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }
+    ).addTo(map);
 
     bindPickGestures();
     return map;
   }
 
   function bindPickGestures() {
-    map.on("dblclick", (event) => emitPick(event.latlng));
+    map.on("dblclick", (event) => {
+      emitPick(event.latlng);
+    });
 
     let pressTimer = null;
 
@@ -39,16 +47,25 @@ const MemoryMap = (() => {
       );
     });
 
-    ["touchend", "touchmove", "movestart"].forEach((name) => {
-      map.on(name, () => clearTimeout(pressTimer));
+    [
+      "touchend",
+      "touchmove",
+      "movestart",
+    ].forEach((name) => {
+      map.on(name, () => {
+        clearTimeout(pressTimer);
+      });
     });
   }
 
   function emitPick(latlng) {
-    pickHandlers.forEach((handler) => handler({
-      latitude: latlng.lat,
-      longitude: latlng.lng,
-    }));
+    pickHandlers.forEach((handler) => {
+      handler({
+        latitude: latlng.lat,
+        longitude:
+          ((latlng.lng + 180) % 360 + 360) % 360 - 180,
+      });
+    });
   }
 
   function onPick(handler) {
@@ -56,17 +73,38 @@ const MemoryMap = (() => {
   }
 
   function onViewChange(handler) {
-    map.on("moveend", () => handler(getBounds()));
+    map.on("moveend", () => {
+      handler(getBounds());
+    });
   }
 
   function getBounds() {
     const bounds = map.getBounds();
 
     return {
-      south: Math.max(bounds.getSouth(), -90),
-      west: Math.max(bounds.getWest(), -180),
-      north: Math.min(bounds.getNorth(), 90),
-      east: Math.min(bounds.getEast(), 180),
+      south: Math.max(
+        bounds.getSouth(),
+        -90
+      ),
+
+      west:
+        bounds.getEast() - bounds.getWest() >= 360
+          ? -180
+          : (
+              (bounds.getWest() + 180) % 360 + 360
+            ) % 360 - 180,
+
+      north: Math.min(
+        bounds.getNorth(),
+        90
+      ),
+
+      east:
+        bounds.getEast() - bounds.getWest() >= 360
+          ? 180
+          : (
+              (bounds.getEast() + 180) % 360 + 360
+            ) % 360 - 180,
     };
   }
 
@@ -74,19 +112,31 @@ const MemoryMap = (() => {
     return L.layerGroup().addTo(map);
   }
 
-  function addPin(layer, latitude, longitude, color, buildPopup) {
-    return L.circleMarker([latitude, longitude], {
-      radius: 8,
-      color,
-      fillColor: color,
-      fillOpacity: 0.85,
-    })
+  function addPin(
+    layer,
+    latitude,
+    longitude,
+    color,
+    buildPopup
+  ) {
+    return L.circleMarker(
+      [latitude, longitude],
+      {
+        radius: 8,
+        color,
+        fillColor: color,
+        fillOpacity: 0.85,
+      }
+    )
       .bindPopup(buildPopup)
       .addTo(layer);
   }
 
   function flyTo(latitude, longitude) {
-    map.flyTo([latitude, longitude], 15);
+    map.flyTo(
+      [latitude, longitude],
+      15
+    );
   }
 
   return {

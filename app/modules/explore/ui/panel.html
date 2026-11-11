@@ -1,16 +1,75 @@
-<h2>Khám phá</h2>
-<p id="pin-count" class="muted">Đang tải ký ức công khai...</p>
-<form id="explore-filter" class="form explore-filter">
-  <label class="field">Từ khóa
-    <input type="search" name="q" placeholder="Tên địa điểm, tiêu đề...">
-  </label>
-  <label class="field">Hashtag
-    <input type="text" name="hashtags" placeholder="#dalat #phuot">
-  </label>
-  <label class="field">Khu vực
-    <select name="region">
+<section aria-labelledby="explore-heading">
+  <h2 id="explore-heading">Khám phá cộng đồng</h2>
+
+  <p class="muted">
+    Ghim đỏ là ký ức công khai.
+  </p>
+
+  <form id="explore-filter" class="explore-filter">
+    <label for="explore-q">Từ khóa</label>
+
+    <input
+      id="explore-q"
+      name="q"
+      maxlength="100"
+      placeholder="Tiêu đề, tên địa điểm…"
+    >
+
+    <label for="explore-region">Khu vực</label>
+
+    <select id="explore-region" name="region">
       <option value="">Tất cả tỉnh/thành</option>
     </select>
-  </label>
-  <button class="button" type="submit">Lọc</button>
-</form>
+
+    <label for="explore-tags">Hashtag</label>
+
+    <input
+      id="explore-tags"
+      name="hashtags"
+      maxlength="500"
+      placeholder="#dalat #phuot"
+    >
+
+    <label class="explore-check">
+      <input
+        id="explore-viewport"
+        type="checkbox"
+        checked
+      >
+      Danh sách trong vùng bản đồ
+    </label>
+
+    <div class="explore-actions">
+      <button class="button" type="submit">
+        Tìm kiếm
+      </button>
+
+      <button
+        class="button"
+        id="explore-reset"
+        type="button"
+      >
+        Bỏ lọc
+      </button>
+    </div>
+  </form>
+
+  <p
+    id="pin-count"
+    class="muted"
+    aria-live="polite"
+  ></p>
+
+  <p id="explore-status" role="status"></p>
+
+  <div id="explore-results"></div>
+
+  <button
+    id="explore-more"
+    class="button"
+    type="button"
+    hidden
+  >
+    Tải thêm
+  </button>
+</section>

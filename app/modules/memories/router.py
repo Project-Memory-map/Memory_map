@@ -2,7 +2,7 @@ import math
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
-from sqlalchemy import select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -10,7 +10,8 @@ from app.core.response import build_response
 from app.modules.accounts.deps import get_current_user
 from app.modules.accounts.models import User
 from app.modules.memories.geocode import EMPTY_MESSAGE, search_places
-from app.modules.memories.models import Memory
+from app.modules.memories.media_access import router as media_router
+from app.modules.memories.models import Memory, TripMemory
 
 
 router = APIRouter(
@@ -20,7 +21,9 @@ router = APIRouter(
 
 
 def today_vn():
-    return datetime.now(timezone(timedelta(hours=7))).date()
+    return datetime.now(
+        timezone(timedelta(hours=7))
+    ).date()
 
 
 def serialize(memory):
@@ -100,10 +103,16 @@ def create_memory(
     place_name = place_name.strip()
 
     if not title:
-        raise HTTPException(400, "Vui lòng nhập tiêu đề")
+        raise HTTPException(
+            400,
+            "Vui lòng nhập tiêu đề",
+        )
 
     if len(title) > 200:
-        raise HTTPException(400, "Tiêu đề tối đa 200 ký tự")
+        raise HTTPException(
+            400,
+            "Tiêu đề tối đa 200 ký tự",
+        )
 
     if not place_name or len(place_name) > 255:
         raise HTTPException(
@@ -111,17 +120,25 @@ def create_memory(
             "Tên địa điểm phải có từ 1 đến 255 ký tự",
         )
 
-    # Giữ nguyên nội dung, không trim hoặc cắt ngắn câu chuyện.
     if len(content) > 100000:
-        raise HTTPException(400, "Nội dung tối đa 100.000 ký tự")
+        raise HTTPException(
+            400,
+            "Nội dung tối đa 100.000 ký tự",
+        )
 
     try:
         day = date.fromisoformat(memory_date)
     except ValueError:
-        raise HTTPException(400, "Vui lòng chọn ngày hợp lệ")
+        raise HTTPException(
+            400,
+            "Vui lòng chọn ngày hợp lệ",
+        )
 
     if day > today_vn():
-        raise HTTPException(400, "Ngày không được ở tương lai")
+        raise HTTPException(
+            400,
+            "Ngày không được ở tương lai",
+        )
 
     try:
         lat = float(latitude)
@@ -138,7 +155,10 @@ def create_memory(
         and -90 <= lat <= 90
         and -180 <= lng <= 180
     ):
-        raise HTTPException(400, "Tọa độ không hợp lệ")
+        raise HTTPException(
+            400,
+            "Tọa độ không hợp lệ",
+        )
 
     memory = Memory(
         user_id=user.id,
@@ -166,3 +186,61 @@ def create_memory(
         request,
         data=serialize(memory),
     )
+
+
+@router.delete("/{memory_id}")
+def delete_memory(
+    memory_id: int,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        result = db.execute(
+            update(Memory)
+            .where(
+                Memory.id == memory_id,
+                Memory.user_id == user.id,
+                Memory.deleted_at.is_(None),
+            )
+            .values(
+                deleted_at=datetime.now(
+                    timezone.utc
+                ).replace(tzinfo=None)
+            )
+        )
+
+        if result.rowcount != 1:
+            raise HTTPException(
+                404,
+                "Không tìm thấy ký ức",
+            )
+
+        # Chỉ gỡ liên kết ký ức khỏi chuyến đi.
+        # Chuyến đi và những ký ức khác vẫn được giữ.
+        db.execute(
+            delete(TripMemory).where(
+                TripMemory.memory_id == memory_id
+            )
+        )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    return build_response(
+        200,
+        "Đã xóa ký ức",
+        request,
+        data={"id": memory_id},
+    )
+
+
+# Gom router để app/main.py hiện tại sử dụng được cả hai.
+memory_router = router
+
+router = APIRouter()
+router.include_router(memory_router)
+router.include_router(media_router)
