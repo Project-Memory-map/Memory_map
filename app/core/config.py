@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     db_password: str = ""
     db_name: str = "ban_do_ky_uc"
 
+    # JWT – dùng chung cho mọi API cần đăng nhập
+    jwt_secret: str = "doi-chuoi-nay-trong-file-env"
+    access_token_minutes: int = 60 * 24
+
     cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
     @property
