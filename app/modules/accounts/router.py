@@ -22,8 +22,23 @@ Giao diện đã có sẵn (ui/ + js/). Các API dưới đây là việc cần 
 Bảng dùng: users, oauth_accounts, password_reset_tokens (models.py).
 Mọi API trả về qua core/response.py build_response(), báo lỗi bằng lớp trong core/errors.py.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.core.response import build_response
+from app.modules.accounts import service
+from app.modules.accounts.schemas import RegisterRequest
 
 router = APIRouter(tags=["M1 - Tài khoản"])
+
+router = APIRouter(tags=["M1 - Tài khoản"])
+
+# ----- US-ACC-001: Đăng ký bằng email
+ 
+@router.post("/api/auth/register", status_code=201)
+def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
+    data = service.register(db, payload)
+    return build_response(201, service.MSG_REGISTER_OK, request, data=data)
 
 # TODO: thêm các endpoint theo bảng trên
