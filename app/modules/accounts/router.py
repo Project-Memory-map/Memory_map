@@ -32,8 +32,6 @@ from app.modules.accounts.schemas import RegisterRequest
 
 router = APIRouter(tags=["M1 - Tài khoản"])
 
-router = APIRouter(tags=["M1 - Tài khoản"])
-
 # ----- US-ACC-001: Đăng ký bằng email
  
 @router.post("/api/auth/register", status_code=201)
