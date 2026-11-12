@@ -6,8 +6,10 @@ PyMySQL>=1.1
 cryptography>=42.0        # PyMySQL cần để đăng nhập MySQL 8
 pydantic>=2.7,<3.0
 pydantic-settings>=2.3
-httpx>=0.27,<1.0        # Facebook Graph API client
-PyJWT>=2.8,<3.0         # JWT shared by account sessions
-
+PyJWT>=2.8
+python-multipart>=0.0.9
 # Thành viên làm chức năng cần thư viện nào thì thêm vào đây
 # (vd: bcrypt, python-jose, python-multipart, Pillow, httpx...)
+bcrypt>=4.1               # băm mật khẩu (US-ACC-001)
+email-validator>=2.1      # kiểm tra định dạng email (US-ACC-001)
+httpx>=0.27,<1.0          # Facebook Graph API client (US-ACC-004)

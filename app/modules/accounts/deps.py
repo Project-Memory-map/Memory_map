@@ -1,61 +1,34 @@
-from __future__ import annotations
-
-from typing import Annotated
-
-import jwt
-from fastapi import Depends, HTTPException, Request, status
+"""Lấy người dùng đang đăng nhập từ header Authorization: Bearer <token>."""
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
+from app.core.database import get_db
+from app.core.errors import ForbiddenException, UnauthorizedException
+from app.core.security import decode_access_token
 from app.modules.accounts.models import User
 
-_bearer_scheme = HTTPBearer(auto_error=False)
-_LOGIN_REQUIRED = "Vui lòng đăng nhập để tiếp tục"
+bearer = HTTPBearer(auto_error=False)
 
 
-def _unauthorized() -> HTTPException:
-    return HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=_LOGIN_REQUIRED,
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-
-def get_current_user(
-    request: Request,
-    credentials: Annotated[
-        HTTPAuthorizationCredentials | None,
-        Depends(_bearer_scheme),
-    ],
-) -> User:
+def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
+    db: Session = Depends(get_db),
+) -> User | None:
     if credentials is None:
-        raise _unauthorized()
+        return None
+    payload = decode_access_token(credentials.credentials)
+    if not payload or not str(payload.get("sub", "")).isdigit():
+        return None
+    user = db.get(User, int(payload["sub"]))
+    if user is None or user.token_version != payload.get("tv"):
+        return None
+    return user
 
-    settings = request.app.state.settings
-    if not settings.jwt_secret_key:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="JWT_SECRET_KEY chưa được cấu hình",
-        )
 
-    try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.jwt_secret_key,
-            algorithms=["HS256"],
-        )
-    except jwt.PyJWTError as exc:
-        raise _unauthorized() from exc
-
-    user_id = payload.get("user_id")
-    token_version = payload.get("token_version")
-    if type(user_id) is not int or type(token_version) is not int:
-        raise _unauthorized()
-
-    user = request.app.state.user_repository.get_by_id(user_id)
-    if (
-        user is None
-        or user.status == "locked"
-        or user.token_version != token_version
-    ):
-        raise _unauthorized()
+def get_current_user(user: User | None = Depends(get_current_user_optional)) -> User:
+    if user is None:
+        raise UnauthorizedException()
+    if user.status == "locked":
+        raise ForbiddenException("Tài khoản của bạn đã bị khóa")
     return user

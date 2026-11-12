@@ -5,7 +5,7 @@ from typing import Any
 
 import httpx
 
-from app.core.config import Settings
+from app.core.config import Settings, settings
 
 GRAPH_API_BASE = "https://graph.facebook.com"
 FACEBOOK_AUTHORIZE_URL = "https://www.facebook.com/dialog/oauth"
@@ -28,10 +28,10 @@ class FacebookProfile:
 class FacebookAuthService:
     def __init__(
         self,
-        settings: Settings,
+        settings_obj: Settings | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        self.settings = settings
+        self.settings = settings_obj or settings
         self.transport = transport
 
     def authorization_url(self, state: str) -> str:
@@ -159,3 +159,15 @@ class FacebookAuthService:
                 "Đăng nhập Facebook chưa được cấu hình",
             )
         return app_id, app_secret
+
+
+def authorization_url(state: str) -> str:
+    return FacebookAuthService(settings).authorization_url(state)
+
+
+async def profile_from_code(code: str) -> FacebookProfile:
+    return await FacebookAuthService(settings).profile_from_code(code)
+
+
+async def profile_from_access_token(access_token: str) -> FacebookProfile:
+    return await FacebookAuthService(settings).profile_from_access_token(access_token)
