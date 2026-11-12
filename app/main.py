@@ -26,6 +26,7 @@ from app.modules.explore.router import router as explore_router
 from app.modules.memories.create_router import router as memory_create_router
 from app.modules.memories.images_router import router as memory_images_router
 from app.modules.memories.router import router as memories_router
+from app.modules.memories.trips_router import router as trips_router
 from app.modules.memories.video_router import router as memory_videos_router
 
 logging.basicConfig(
@@ -145,6 +146,7 @@ app.include_router(logout_router)          # US-ACC-008
 app.include_router(memory_create_router)   # US-MEM-002
 app.include_router(memory_images_router)   # US-MEM-003
 app.include_router(memory_videos_router)   # US-MEM-004
+app.include_router(trips_router)           # US-MEM-009
 
 
 # ----- Router đăng nhập của Trí
