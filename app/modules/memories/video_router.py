@@ -36,7 +36,12 @@ def _visible_memory(db: Session, memory_id: int, current_user: User | None) -> M
     if memory is None or memory.deleted_at is not None:
         raise NotFoundException("Không tìm thấy ký ức")
     is_owner = current_user is not None and current_user.id == memory.user_id
-    if not is_owner and (memory.visibility != "public" or memory.status != "active"):
+    author_active = memory.author is None or memory.author.status == "active"
+    if not is_owner and (
+        memory.visibility != "public"
+        or memory.status != "active"
+        or not author_active
+    ):
         raise NotFoundException("Không tìm thấy ký ức")
     return memory
 
@@ -201,10 +206,16 @@ def stream_video(
         raise NotFoundException("Không tìm thấy tệp")
     if not verify_video_signature(media_id, media.file_path, exp, sig):
         raise NotFoundException("Không tìm thấy tệp")
-    try:
-        memory = _visible_memory(db, media.memory_id, current_user)
-    except NotFoundException as exc:
-        raise NotFoundException("Không tìm thấy tệp") from exc
+    memory = db.scalar(select(Memory).where(Memory.id == media.memory_id))
+    if memory is None or memory.deleted_at is not None:
+        raise NotFoundException("Không tìm thấy tệp")
+    is_owner = current_user is not None and current_user.id == memory.user_id
+    if not is_owner:
+        if memory.visibility != "public":
+            raise ForbiddenException("Bạn không có quyền truy cập tệp này")
+        author_active = memory.author is None or memory.author.status == "active"
+        if memory.status != "active" or not author_active:
+            raise NotFoundException("Không tìm thấy tệp")
     try:
         path = resolve_upload_path(media.file_path)
     except ValueError as exc:
