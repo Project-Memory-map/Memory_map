@@ -3,15 +3,15 @@ from __future__ import annotations
 from collections.abc import Iterator
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import Response, StreamingResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.errors import BadRequestException, ForbiddenException, NotFoundException
 from app.core.response import build_response
-from app.modules.accounts.deps import get_current_user
+from app.modules.accounts.deps import get_current_user, get_current_user_optional
 from app.modules.accounts.models import User
 from app.modules.memories.models import Media, Memory
 from app.modules.memories.services.image_media_service import (
@@ -23,42 +23,29 @@ from app.modules.memories.services.video_media_service import (
     VideoUploadError,
     discard_staged_video,
     stage_video,
-    video_url,
     verify_video_signature,
+    video_url,
 )
 
 router = APIRouter(tags=["M2 - Video ký ức"])
-_bearer = HTTPBearer(auto_error=False)
 _STREAM_CHUNK_BYTES = 64 * 1024
-
-
-def _optional_user(
-    request: Request,
-    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
-) -> User | None:
-    if credentials is None:
-        return None
-    try:
-        return get_current_user(request, credentials)
-    except HTTPException:
-        return None
 
 
 def _visible_memory(db: Session, memory_id: int, current_user: User | None) -> Memory:
     memory = db.scalar(select(Memory).where(Memory.id == memory_id))
     if memory is None or memory.deleted_at is not None:
-        raise HTTPException(404, "Không tìm thấy ký ức")
+        raise NotFoundException("Không tìm thấy ký ức")
     is_owner = current_user is not None and current_user.id == memory.user_id
     if not is_owner and (memory.visibility != "public" or memory.status != "active"):
-        raise HTTPException(404, "Không tìm thấy ký ức")
+        raise NotFoundException("Không tìm thấy ký ức")
     return memory
 
 
-def _serialize_video(media: Media, request: Request) -> dict[str, object]:
+def _serialize_video(media: Media) -> dict[str, object]:
     return {
         "id": media.id,
         "type": "video",
-        "url": video_url(media.id, media.file_path, request.app.state.settings),
+        "url": video_url(media.id, media.file_path),
         "mime_type": media.mime_type,
         "size_bytes": media.size_bytes,
         "sort_order": media.sort_order,
@@ -70,7 +57,7 @@ def get_memory_video(
     memory_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(_optional_user),
+    current_user: User | None = Depends(get_current_user_optional),
 ):
     memory = _visible_memory(db, memory_id, current_user)
     media = db.scalar(
@@ -80,7 +67,7 @@ def get_memory_video(
         200,
         "Đã tải video của ký ức",
         request,
-        data=_serialize_video(media, request) if media is not None else None,
+        data=_serialize_video(media) if media is not None else None,
     )
 
 
@@ -95,11 +82,11 @@ async def update_memory_video(
 ):
     memory = db.scalar(select(Memory).where(Memory.id == memory_id).with_for_update())
     if memory is None or memory.deleted_at is not None:
-        raise HTTPException(404, "Không tìm thấy ký ức")
+        raise NotFoundException("Không tìm thấy ký ức")
     if memory.user_id != current_user.id:
-        raise HTTPException(403, "Bạn không có quyền thay đổi video của ký ức này")
+        raise ForbiddenException("Bạn không có quyền thay đổi video của ký ức này")
     if len(video) > 1:
-        raise HTTPException(400, "Mỗi ký ức chỉ có 1 video")
+        raise BadRequestException("Mỗi ký ức chỉ có 1 video")
 
     existing = db.scalars(
         select(Media)
@@ -108,21 +95,21 @@ async def update_memory_video(
         .with_for_update()
     ).all()
     if video and existing and not remove_video:
-        raise HTTPException(400, "Mỗi ký ức chỉ có 1 video")
+        raise BadRequestException("Mỗi ký ức chỉ có 1 video")
     if not video and not remove_video:
         current = existing[0] if existing else None
         return build_response(
             200,
             "Video của ký ức không thay đổi",
             request,
-            data=_serialize_video(current, request) if current is not None else None,
+            data=_serialize_video(current) if current is not None else None,
         )
 
     staged: StagedVideo | None = None
     old_file_paths = [row.file_path for row in existing] if remove_video else []
     try:
         if video:
-            staged = await stage_video(video[0], request.app.state.settings)
+            staged = await stage_video(video[0])
         if remove_video:
             for row in existing:
                 db.delete(row)
@@ -148,20 +135,20 @@ async def update_memory_video(
         db.commit()
     except VideoUploadError as exc:
         db.rollback()
-        discard_staged_video(staged, request.app.state.settings)
-        raise HTTPException(400, str(exc)) from exc
+        discard_staged_video(staged)
+        raise BadRequestException(str(exc)) from exc
     except Exception:
         db.rollback()
-        discard_staged_video(staged, request.app.state.settings)
+        discard_staged_video(staged)
         raise
 
     for file_path in old_file_paths:
-        delete_media_file(file_path, request.app.state.settings)
+        delete_media_file(file_path)
     return build_response(
         200,
         "Đã cập nhật video của ký ức",
         request,
-        data=_serialize_video(saved, request) if saved is not None else None,
+        data=_serialize_video(saved) if saved is not None else None,
     )
 
 
@@ -205,23 +192,25 @@ def stream_video(
     exp: int = Query(...),
     sig: str = Query(..., min_length=64, max_length=64),
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(_optional_user),
+    current_user: User | None = Depends(get_current_user_optional),
 ):
-    configuration = request.app.state.settings
     media = db.scalar(
         select(Media).where(Media.id == media_id, Media.media_type == "video")
     )
     if media is None:
-        raise HTTPException(404, "Không tìm thấy tệp")
-    if not verify_video_signature(media_id, media.file_path, exp, sig, configuration):
-        raise HTTPException(404, "Không tìm thấy tệp")
-    memory = _visible_memory(db, media.memory_id, current_user)
+        raise NotFoundException("Không tìm thấy tệp")
+    if not verify_video_signature(media_id, media.file_path, exp, sig):
+        raise NotFoundException("Không tìm thấy tệp")
     try:
-        path = resolve_upload_path(media.file_path, configuration)
+        memory = _visible_memory(db, media.memory_id, current_user)
+    except NotFoundException as exc:
+        raise NotFoundException("Không tìm thấy tệp") from exc
+    try:
+        path = resolve_upload_path(media.file_path)
     except ValueError as exc:
-        raise HTTPException(404, "Không tìm thấy tệp") from exc
+        raise NotFoundException("Không tìm thấy tệp") from exc
     if not path.is_file():
-        raise HTTPException(404, "Không tìm thấy tệp")
+        raise NotFoundException("Không tìm thấy tệp")
 
     size = path.stat().st_size
     requested_range = request.headers.get("range")

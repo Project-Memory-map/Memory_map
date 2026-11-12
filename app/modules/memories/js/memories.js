@@ -561,7 +561,10 @@ const Memories = (() => {
         }
         if (xhr.status >= 200 && xhr.status < 300) resolve(result.data);
         else {
-          if (xhr.status === 401) Api.setToken(null);
+          if (xhr.status === 401) {
+            Api.setToken(null);
+            document.dispatchEvent(new CustomEvent("auth:expired"));
+          }
           const error = new Error(result.message || "Đã có lỗi xảy ra");
           error.status = xhr.status;
           reject(error);

@@ -1,72 +1,61 @@
+"""US-MEM-003 – Đính kèm ảnh vào ký ức (T05B57A)."""
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
-from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from app.core.config import Settings
-from app.core.security import create_access_token
-from app.main import create_app
+from app.core.config import settings
+from app.core.security import create_access_token, sign_media_url, verify_media_signature
 from app.modules.accounts.models import User
 from app.modules.memories.models import Media, Memory
 from app.modules.memories.services.image_media_service import resolve_upload_path
 
-JWT_SECRET = "test-signing-secret-with-enough-entropy"
 FIVE_MIB = 5 * 1024 * 1024
 
 
 @pytest.fixture
-def image_client(tmp_path):
-    configuration = Settings(
-        jwt_secret_key=JWT_SECRET,
-        database_path=str(tmp_path / "images.sqlite3"),
+def image_context(client: TestClient, db_session, tmp_path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(settings, "upload_dir", tmp_path / "uploads")
+
+    owner = User(
+        email="owner@example.com",
+        password_hash=None,
+        display_name="Memory Owner",
+        role="user",
+        status="active",
+        token_version=0,
     )
-    app = create_app(configuration)
-    object.__setattr__(configuration, "upload_dir", tmp_path / "uploads")
+    other = User(
+        email="other@example.com",
+        password_hash=None,
+        display_name="Other User",
+        role="user",
+        status="active",
+        token_version=0,
+    )
+    db_session.add_all([owner, other])
+    db_session.flush()
+    memory = Memory(
+        user_id=owner.id,
+        title="Photo memory",
+        content="Test memory",
+        memory_date=date(2025, 1, 1),
+        place_name="Hanoi",
+        latitude=21.028511,
+        longitude=105.804817,
+        visibility="private",
+        status="active",
+    )
+    db_session.add(memory)
+    db_session.commit()
 
-    with Session(app.state.database_engine, expire_on_commit=False) as db:
-        owner = User(
-            email="owner@example.com",
-            password_hash=None,
-            display_name="Memory Owner",
-            role="user",
-            status="active",
-            token_version=0,
-        )
-        other = User(
-            email="other@example.com",
-            password_hash=None,
-            display_name="Other User",
-            role="user",
-            status="active",
-            token_version=0,
-        )
-        db.add_all([owner, other])
-        db.flush()
-        memory = Memory(
-            user_id=owner.id,
-            title="Photo memory",
-            content="Test memory",
-            memory_date=date(2025, 1, 1),
-            place_name="Hanoi",
-            latitude=21.028511,
-            longitude=105.804817,
-            visibility="private",
-            status="active",
-        )
-        db.add(memory)
-        db.commit()
-        owner_token = create_access_token(owner, configuration)
-        other_token = create_access_token(other, configuration)
-        memory_id = memory.id
-
-    with TestClient(app) as client:
-        yield client, app, memory_id, owner_token, other_token
+    owner_token = create_access_token(owner.id, owner.token_version)
+    other_token = create_access_token(other.id, other.token_version)
+    return client, db_session, memory.id, owner_token, other_token
 
 
 def jpeg_bytes(marker: bytes = b"x", size: int = 64) -> bytes:
@@ -87,9 +76,9 @@ def attach(client: TestClient, memory_id: int, token: str, files, **form):
     )
 
 
-def test_ac1_keeps_three_selected_images_in_order_and_persists_them(image_client):
-    client, app, memory_id, owner_token, _ = image_client
-    expected = [jpeg_bytes(b"a"), jpeg_bytes(b"b"), jpeg_bytes(b"c")]
+def test_ac1_keeps_three_selected_images_in_order_and_persists_them(image_context):
+    client, db_session, memory_id, owner_token, _ = image_context
+    expected = [jpeg_bytes(b"a", 2 * 1024 * 1024), jpeg_bytes(b"b", 2 * 1024 * 1024), jpeg_bytes(b"c", 2 * 1024 * 1024)]
 
     response = attach(
         client,
@@ -102,23 +91,34 @@ def test_ac1_keeps_three_selected_images_in_order_and_persists_them(image_client
         ],
     )
 
+    body = response.json()
     assert response.status_code == 200
-    rows = response.json()["data"]
+    assert body["statusCode"] == 200
+    rows = body["data"]
     assert [row["sort_order"] for row in rows] == [0, 1, 2]
-    listed = client.get(f"/api/memories/{memory_id}/images", headers={"Authorization": f"Bearer {owner_token}"})
+
+    parsed_url = urlsplit(rows[0]["url"])
+    qs = parse_qs(parsed_url.query)
+    assert verify_media_signature(rows[0]["id"], int(qs["exp"][0]), qs["sig"][0]) is True
+    assert sign_media_url(rows[0]["id"]).startswith(f"/api/media/{rows[0]['id']}?exp=")
+
+    listed = client.get(
+        f"/api/memories/{memory_id}/images",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
     assert listed.status_code == 200
+    assert listed.json()["statusCode"] == 200
     assert [row["id"] for row in listed.json()["data"]] == [row["id"] for row in rows]
 
-    with Session(app.state.database_engine) as db:
-        media_rows = db.scalars(
-            select(Media).where(Media.memory_id == memory_id).order_by(Media.sort_order)
-        ).all()
-        assert [row.sort_order for row in media_rows] == [0, 1, 2]
-        assert [resolve_upload_path(row.file_path, app.state.settings).read_bytes() for row in media_rows] == expected
+    media_rows = db_session.scalars(
+        select(Media).where(Media.memory_id == memory_id).order_by(Media.sort_order)
+    ).all()
+    assert [row.sort_order for row in media_rows] == [0, 1, 2]
+    assert [resolve_upload_path(row.file_path).read_bytes() for row in media_rows] == expected
 
 
-def test_ac2_accepts_ten_images_at_exactly_five_mib_each(image_client):
-    client, _, memory_id, owner_token, _ = image_client
+def test_ac2_accepts_ten_images_at_exactly_five_mib_each(image_context):
+    client, _, memory_id, owner_token, _ = image_context
     content = jpeg_bytes(b"5", FIVE_MIB)
     response = attach(
         client,
@@ -127,13 +127,15 @@ def test_ac2_accepts_ten_images_at_exactly_five_mib_each(image_client):
         [image_upload(f"image-{index}.jpg", content) for index in range(10)],
     )
 
+    body = response.json()
     assert response.status_code == 200
-    assert len(response.json()["data"]) == 10
-    assert {row["size_bytes"] for row in response.json()["data"]} == {FIVE_MIB}
+    assert body["statusCode"] == 200
+    assert len(body["data"]) == 10
+    assert {row["size_bytes"] for row in body["data"]} == {FIVE_MIB}
 
 
-def test_ac3_rejects_eleventh_image_and_keeps_existing_ten(image_client):
-    client, _, memory_id, owner_token, _ = image_client
+def test_ac3_rejects_eleventh_image_and_keeps_existing_ten(image_context):
+    client, _, memory_id, owner_token, _ = image_context
     too_many = attach(
         client,
         memory_id,
@@ -141,6 +143,7 @@ def test_ac3_rejects_eleventh_image_and_keeps_existing_ten(image_client):
         [image_upload(f"batch-{index}.jpg", jpeg_bytes(bytes([index]))) for index in range(11)],
     )
     assert too_many.status_code == 400
+    assert too_many.json()["statusCode"] == 400
     assert too_many.json()["message"] == "Mỗi ký ức tối đa 10 ảnh"
 
     first = attach(
@@ -153,26 +156,29 @@ def test_ac3_rejects_eleventh_image_and_keeps_existing_ten(image_client):
 
     response = attach(client, memory_id, owner_token, [image_upload("eleventh.jpg", jpeg_bytes())])
     assert response.status_code == 400
+    assert response.json()["statusCode"] == 400
     assert response.json()["message"] == "Mỗi ký ức tối đa 10 ảnh"
-    listed = client.get(f"/api/memories/{memory_id}/images", headers={"Authorization": f"Bearer {owner_token}"})
+    listed = client.get(
+        f"/api/memories/{memory_id}/images",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
     assert len(listed.json()["data"]) == 10
 
 
-def test_image_limit_does_not_count_video_media(image_client):
-    client, app, memory_id, owner_token, _ = image_client
-    with Session(app.state.database_engine) as db:
-        db.add(
-            Media(
-                memory_id=memory_id,
-                media_type="video",
-                file_path="videos/existing.mp4",
-                thumb_path=None,
-                mime_type="video/mp4",
-                size_bytes=1024,
-                sort_order=0,
-            )
+def test_image_limit_does_not_count_video_media(image_context):
+    client, db_session, memory_id, owner_token, _ = image_context
+    db_session.add(
+        Media(
+            memory_id=memory_id,
+            media_type="video",
+            file_path="videos/existing.mp4",
+            thumb_path=None,
+            mime_type="video/mp4",
+            size_bytes=1024,
+            sort_order=0,
         )
-        db.commit()
+    )
+    db_session.commit()
 
     first = attach(
         client,
@@ -186,17 +192,19 @@ def test_image_limit_does_not_count_video_media(image_client):
     assert len(tenth.json()["data"]) == 10
 
 
-def test_ac4_rejects_image_larger_than_five_mib(image_client):
-    client, _, memory_id, owner_token, _ = image_client
+def test_ac4_rejects_image_larger_than_five_mib(image_context):
+    client, _, memory_id, owner_token, _ = image_context
     response = attach(
         client,
         memory_id,
         owner_token,
-        [image_upload("large.jpg", jpeg_bytes(b"6", FIVE_MIB + 1))],
+        [image_upload("large.jpg", jpeg_bytes(b"6", 6 * 1024 * 1024))],
     )
 
+    body = response.json()
     assert response.status_code == 400
-    assert response.json()["message"] == "Mỗi ảnh không được vượt quá 5 MB"
+    assert body["statusCode"] == 400
+    assert body["message"] == "Mỗi ảnh không được vượt quá 5 MB"
 
 
 @pytest.mark.parametrize(
@@ -208,23 +216,28 @@ def test_ac4_rejects_image_larger_than_five_mib(image_client):
         ("bad-signature.jpg", b"\x89PNG\r\n\x1a\n", "image/jpeg"),
     ],
 )
-def test_ac5_rejects_unsupported_extension_mime_or_magic(image_client, filename, content, mime):
-    client, _, memory_id, owner_token, _ = image_client
+def test_ac5_rejects_unsupported_extension_mime_or_magic(image_context, filename, content, mime):
+    client, _, memory_id, owner_token, _ = image_context
     response = attach(client, memory_id, owner_token, [image_upload(filename, content, mime)])
 
+    body = response.json()
     assert response.status_code == 400
-    assert response.json()["message"] == "Định dạng tệp không được hỗ trợ"
+    assert body["statusCode"] == 400
+    assert body["message"] == "Định dạng tệp không được hỗ trợ"
 
 
-def test_only_memory_owner_can_attach_images(image_client):
-    client, _, memory_id, _, other_token = image_client
+def test_only_memory_owner_can_attach_images(image_context):
+    client, _, memory_id, _, other_token = image_context
     response = attach(client, memory_id, other_token, [image_upload("secret.jpg", jpeg_bytes())])
 
+    body = response.json()
     assert response.status_code == 403
+    assert body["statusCode"] == 403
+    assert body["error"] == "FORBIDDEN"
 
 
-def test_private_and_deleted_memory_images_are_not_available_to_others(image_client):
-    client, app, memory_id, owner_token, other_token = image_client
+def test_private_and_deleted_memory_images_are_not_available_to_others(image_context):
+    client, db_session, memory_id, owner_token, other_token = image_context
     response = attach(client, memory_id, owner_token, [image_upload("private.jpg", jpeg_bytes())])
     assert response.status_code == 200
     media_url = response.json()["data"][0]["url"]
@@ -236,10 +249,9 @@ def test_private_and_deleted_memory_images_are_not_available_to_others(image_cli
     assert client.get(media_url, headers={"Authorization": f"Bearer {other_token}"}).status_code == 404
     assert client.get(media_url, headers={"Authorization": f"Bearer {owner_token}"}).status_code == 200
 
-    with Session(app.state.database_engine) as db:
-        memory = db.get(Memory, memory_id)
-        memory.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
-        db.commit()
+    memory = db_session.get(Memory, memory_id)
+    memory.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db_session.commit()
 
     assert client.get(media_url, headers={"Authorization": f"Bearer {owner_token}"}).status_code == 404
     assert client.get(

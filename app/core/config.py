@@ -25,15 +25,18 @@ class Settings(BaseSettings):
     db_password: str = ""
     db_name: str = "ban_do_ky_uc"
 
-    # Facebook OAuth and the shared JWT format (BR-20).
+    # JWT – dùng chung cho mọi API cần đăng nhập
+    jwt_secret: str = "doi-chuoi-nay-trong-file-env"
+    access_token_minutes: int = 60 * 24
+
+    # Facebook OAuth (US-ACC-004) & Media (US-MEM-003 / US-MEM-004)
     facebook_app_id: str = ""
     facebook_app_secret: str = ""
     facebook_redirect_uri: str = "http://127.0.0.1:8000/api/auth/facebook/callback"
     facebook_http_timeout_seconds: float = 5.0
-    jwt_secret_key: str | None = None
-
-    # Optional SQLite path used by isolated application tests.
-    database_path: str | None = None
+    media_secret: str = "doi-chuoi-nay-trong-file-env-it-nhat-32-ky-tu"
+    media_url_expire_seconds: int = 3600
+    upload_dir: Path = BASE_DIR / "uploads"
 
     cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 

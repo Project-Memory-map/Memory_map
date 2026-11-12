@@ -18,7 +18,6 @@ SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS users (
   id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   email               VARCHAR(255)  NULL,                 -- BR-08: duy nhất, lưu chữ thường
-  facebook_id         VARCHAR(191)  NULL,                 -- ID Facebook đã liên kết, nếu có
   password_hash       VARCHAR(255)  NULL,                 -- BR-07: chỉ lưu bản băm
   display_name        VARCHAR(100)  NOT NULL,             -- BR-12: tên hiển thị công khai
   avatar_path         VARCHAR(500)  NULL,
@@ -34,8 +33,7 @@ CREATE TABLE IF NOT EXISTS users (
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT pk_users PRIMARY KEY (id),
-  UNIQUE KEY uq_users_email (email),
-  UNIQUE KEY uq_users_facebook_id (facebook_id)
+  UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB COMMENT='Tài khoản và hồ sơ người dùng';
 
 -- 1.2 oauth_accounts – Liên kết Google / Facebook
