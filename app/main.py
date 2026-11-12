@@ -20,6 +20,7 @@ from app.modules.explore.router import router as explore_router
 from app.modules.memories.images_router import router as memory_images_router
 from app.modules.memories.privacy_router import router as memory_privacy_router
 from app.modules.memories.router import router as memories_router
+from app.modules.memories.trips_router import router as trips_router
 from app.modules.memories.video_router import router as memory_videos_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -86,6 +87,7 @@ app.include_router(logout_router)          # US-ACC-008
 app.include_router(memory_images_router)   # US-MEM-003
 app.include_router(memory_videos_router)   # US-MEM-004
 app.include_router(memory_privacy_router)  # US-MEM-008
+app.include_router(trips_router)           # US-MEM-009
 
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"], include_in_schema=False)
