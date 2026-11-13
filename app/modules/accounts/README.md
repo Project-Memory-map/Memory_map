@@ -5,6 +5,7 @@
 | File | Công dụng |
 |---|---|
 | `router.py` | API của module. Hiện **chưa có endpoint**: đầu file có bảng các API cần làm, kèm mã task và file JS nào đang gọi |
+| `password_router.py` | US-ACC-007: `POST /api/auth/change-password` – đổi mật khẩu (hoặc tạo mật khẩu cho tài khoản mạng xã hội), tăng `token_version` để đăng xuất phiên khác |
 | `models.py` | Model ORM của 3 bảng: `User` (users), `OAuthAccount` (oauth_accounts), `PasswordResetToken` (password_reset_tokens) |
 | `schemas.py` | ⚠️ *Chưa có nội dung* – kiểu dữ liệu vào/ra (Pydantic) cho đăng ký, đăng nhập, hồ sơ... |
 | `deps.py` | ⚠️ *Chưa có nội dung* – `get_current_user`, `get_optional_user`, `require_admin` (lấy người dùng từ JWT). Làm cùng US-ACC-002; **các module khác cần dùng** |
