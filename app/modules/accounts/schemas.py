@@ -89,6 +89,18 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class ChangePasswordRequest(BaseModel):
+    """US-ACC-007: current_password bỏ trống khi tài khoản mạng xã hội tạo mật khẩu lần đầu."""
+
+    current_password: str | None = None
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def _new_password(cls, value: str) -> str:
+        return check_password_strength(value)
+
+
 # ----- Dữ liệu trả về
 
 class UserResponse(BaseModel):
@@ -102,6 +114,7 @@ class UserResponse(BaseModel):
     role: str
     created_at: datetime | None
     has_password: bool = False
+    providers: list[str] = []
 
 
 class AuthResponse(BaseModel):

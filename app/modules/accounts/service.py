@@ -21,7 +21,11 @@ def find_user_by_email(db: Session, email: str) -> User | None:
 
 
 def to_user_response(user: User) -> UserResponse:
-    return UserResponse.model_validate(user).model_copy(update={"has_password": bool(user.password_hash)})
+    # profile.js đọc has_password + providers để chọn "Đổi mật khẩu" hay "Tạo mật khẩu" (US-ACC-007)
+    providers = sorted({account.provider for account in user.oauth_accounts})
+    return UserResponse.model_validate(user).model_copy(
+        update={"has_password": bool(user.password_hash), "providers": providers}
+    )
 
 
 def issue_token(user: User) -> AuthResponse:
