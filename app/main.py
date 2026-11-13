@@ -22,6 +22,7 @@ from app.modules.accounts.logout_router import router as logout_router
 from app.modules.accounts.router import router as accounts_router
 from app.modules.admin.router import router as admin_router
 from app.modules.explore.router import router as explore_router
+from app.modules.memories.create_router import router as memory_create_router
 from app.modules.memories.images_router import router as memory_images_router
 from app.modules.memories.router import router as memories_router
 from app.modules.memories.video_router import router as memory_videos_router
@@ -139,6 +140,7 @@ for module_name, module_router in MODULE_ROUTERS.items():
 
 app.include_router(facebook_router)        # US-ACC-004
 app.include_router(logout_router)          # US-ACC-008
+app.include_router(memory_create_router)   # US-MEM-002
 app.include_router(memory_images_router)   # US-MEM-003
 app.include_router(memory_videos_router)   # US-MEM-004
 
