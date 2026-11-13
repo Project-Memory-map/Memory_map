@@ -12,3 +12,4 @@ python-multipart>=0.0.9
 # (vd: bcrypt, python-jose, python-multipart, Pillow, httpx...)
 bcrypt>=4.1               # băm mật khẩu (US-ACC-001)
 email-validator>=2.1      # kiểm tra định dạng email (US-ACC-001)
+httpx>=0.27,<1.0          # Facebook Graph API client (US-ACC-004)
