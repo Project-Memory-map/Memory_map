@@ -23,13 +23,11 @@ const AccountMenu = (() => {
     );
   }
 
-  async function logout() {
-    try {
-      await Api.post("/api/auth/logout");
-    } catch (error) {
-      /* bỏ qua */
-    }
+  function logout() {
+    Api.post("/api/auth/logout", { keepalive: true }).catch(() => null);
     Api.setToken(null);
+    renderGuest();
+    document.documentElement.style.visibility = "hidden";
     window.location.replace("/accounts/login.html?logged_out=1");
   }
 
@@ -87,8 +85,30 @@ const AccountMenu = (() => {
   document.addEventListener("auth:expired", () => {
     if (currentUser) {
       renderGuest();
-      UI.toast("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", "error");
+      const profilePage = document.getElementById("profile-page");
+      if (profilePage) profilePage.hidden = true;
+      document.documentElement.style.visibility = "hidden";
+      window.location.replace("/accounts/login.html?logged_out=1");
     }
+  });
+
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    document.documentElement.style.visibility = "hidden";
+    if (!Api.getToken()) {
+      Api.setToken(null);
+      window.location.replace("/accounts/login.html?logged_out=1");
+      return;
+    }
+    Api.get("/api/auth/me")
+      .then(renderUser)
+      .then(() => {
+        document.documentElement.style.visibility = "";
+      })
+      .catch(() => {
+        Api.setToken(null);
+        window.location.replace("/accounts/login.html?logged_out=1");
+      });
   });
 
   const ready = init();

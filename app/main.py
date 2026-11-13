@@ -12,10 +12,14 @@ from app.core.database import check_database
 from app.core.errors import NotFoundException, register_exception_handlers
 from app.core.response import build_response
 from app.models import register_models
+from app.modules.accounts.facebook_router import router as facebook_router
+from app.modules.accounts.logout_router import router as logout_router
 from app.modules.accounts.router import router as accounts_router
 from app.modules.admin.router import router as admin_router
 from app.modules.explore.router import router as explore_router
+from app.modules.memories.images_router import router as memory_images_router
 from app.modules.memories.router import router as memories_router
+from app.modules.memories.video_router import router as memory_videos_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -75,6 +79,11 @@ for module_name, module_router in MODULE_ROUTERS.items():
     app.mount(f"/{module_name}/js", StaticFiles(directory=module_dir / "js"), name=f"{module_name}-js")
     # Giao diện: /<module>/*.html, *.css
     app.mount(f"/{module_name}", StaticFiles(directory=module_dir / "ui", html=True), name=f"{module_name}-ui")
+
+app.include_router(facebook_router)        # US-ACC-004
+app.include_router(logout_router)          # US-ACC-008
+app.include_router(memory_images_router)   # US-MEM-003
+app.include_router(memory_videos_router)   # US-MEM-004
 
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"], include_in_schema=False)

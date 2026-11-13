@@ -199,6 +199,9 @@
   page.hidden = false;
   if (new URLSearchParams(window.location.search).get("notice") === "need_email" || !user.email) {
     if (!user.email) showTab("info");
+    if (new URLSearchParams(window.location.search).get("notice") === "need_email") {
+      UI.toast("Tài khoản Facebook chưa có email. Vui lòng bổ sung email trong hồ sơ cá nhân để dùng chức năng quên mật khẩu.");
+    }
   }
   loadStats();
   loadYears();
