@@ -39,6 +39,7 @@ const MemoryMap = (() => {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
     bindPickGestures();
+    MemoryTimeline.mount(map);
     return map;
   }
 
@@ -125,11 +126,12 @@ const MemoryMap = (() => {
   }
 
   /* buildPopup trả về phần tử DOM (không dùng chuỗi HTML từ dữ liệu người dùng — BR-21) */
-  function addPin(layer, latitude, longitude, kind, buildPopup, title) {
+  function addPin(layer, latitude, longitude, kind, buildPopup, title, memoryDate) {
     const marker = L.marker([latitude, longitude], { icon: icon(kind), title: title || "", riseOnHover: true });
     if (buildPopup) {
       marker.bindPopup(buildPopup, { maxWidth: 280, minWidth: 220, className: "pin-popup-wrap" });
     }
+    if (memoryDate !== undefined) MemoryTimeline.track(marker, memoryDate);
     return marker.addTo(layer);
   }
 

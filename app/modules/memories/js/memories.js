@@ -100,7 +100,7 @@ const Memories = (() => {
     try {
       const pins = await Api.get("/api/memories/mine/pins", { query: state.filters });
       layer.clearLayers();
-      pins.forEach((pin) => MemoryMap.addPin(layer, pin.latitude, pin.longitude, pinKind(pin), () => buildPopup(pin), pin.title));
+      pins.forEach((pin) => MemoryMap.addPin(layer, pin.latitude, pin.longitude, pinKind(pin), () => buildPopup(pin), pin.title, pin.memory_date));
       if (!Object.keys(state.filters).length) {
         state.myIds = new Set(pins.map((pin) => pin.id));
         UI.emit("mine:loaded", state.myIds);

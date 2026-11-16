@@ -33,7 +33,7 @@
       if (requestId !== state.latestPins) return;
       layer.clearLayers();
       const visible = pins.filter((pin) => !state.myIds.has(pin.id));
-      visible.forEach((pin) => MemoryMap.addPin(layer, pin.latitude, pin.longitude, "public", () => buildPopup(pin), pin.title));
+      visible.forEach((pin) => MemoryMap.addPin(layer, pin.latitude, pin.longitude, "public", () => buildPopup(pin), pin.title, pin.memory_date));
       const count = document.getElementById("pin-count");
       if (count && !document.getElementById("explore-filter").elements.viewport.checked) {
         count.dataset.pins = pins.length;
