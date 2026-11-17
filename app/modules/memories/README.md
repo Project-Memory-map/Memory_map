@@ -5,6 +5,8 @@ Tạo/xem/sửa/xóa ký ức, ảnh/video, riêng tư/công khai, hashtag, chuy
 | File | Công dụng |
 |---|---|
 | `router.py` | API của module. Hiện **chưa có endpoint**: đầu file có bảng các API cần làm, kèm mã task và file JS nào đang gọi |
+| `create_router.py` | US-MEM-002: `GET /api/geocode/reverse` (tọa độ → tên địa điểm) và `POST /api/memories` (tạo ký ức tại vị trí đã chọn) |
+| `services/reverse_geocode_service.py` | Gọi Nominatim `/reverse` có User-Agent và cache kết quả trong bộ nhớ (BR-19) |
 | `models.py` | Model ORM của 6 bảng: `Memory`, `Media`, `Trip`, `TripMemory`, `Hashtag`, `MemoryHashtag` |
 | `__init__.py` | Đánh dấu package (để trống) |
 

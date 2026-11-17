@@ -32,3 +32,4 @@ def get_current_user(user: User | None = Depends(get_current_user_optional)) -> 
     if user.status == "locked":
         raise ForbiddenException("Tài khoản của bạn đã bị khóa")
     return user
+

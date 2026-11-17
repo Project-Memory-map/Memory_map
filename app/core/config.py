@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     media_url_expire_seconds: int = 3600
     upload_dir: Path = BASE_DIR / "uploads"
 
+    # Nominatim (US-MEM-002: đổi tọa độ chọn trên bản đồ thành tên địa điểm)
+    nominatim_url: str = "https://nominatim.openstreetmap.org"
+    geocode_user_agent: str = "BanDoKyUc/0.1 (do-an-sinh-vien)"
+    geocode_timeout_seconds: float = 5.0
+
     cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
     @property
