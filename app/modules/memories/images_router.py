@@ -59,7 +59,12 @@ def _visible_memory(
     if memory is None or memory.deleted_at is not None:
         raise NotFoundException("Không tìm thấy ký ức")
     is_owner = current_user is not None and current_user.id == memory.user_id
-    if not is_owner and (memory.visibility != "public" or memory.status != "active"):
+    author_active = memory.author is None or memory.author.status == "active"
+    if not is_owner and (
+        memory.visibility != "public"
+        or memory.status != "active"
+        or not author_active
+    ):
         raise NotFoundException("Không tìm thấy ký ức")
     return memory
 
@@ -193,12 +198,15 @@ def get_media_file(
     if media is None:
         raise NotFoundException("Không tìm thấy tệp")
     memory = db.scalar(select(Memory).where(Memory.id == media.memory_id))
-    if memory is None:
+    if memory is None or memory.deleted_at is not None:
         raise NotFoundException("Không tìm thấy tệp")
-    try:
-        _visible_memory(db, memory.id, current_user)
-    except NotFoundException as exc:
-        raise NotFoundException("Không tìm thấy tệp") from exc
+    is_owner = current_user is not None and current_user.id == memory.user_id
+    if not is_owner:
+        if memory.visibility != "public":
+            raise ForbiddenException("Bạn không có quyền truy cập tệp này")
+        author_active = memory.author is None or memory.author.status == "active"
+        if memory.status != "active" or not author_active:
+            raise NotFoundException("Không tìm thấy tệp")
     headers = (
         {"Cache-Control": "private, no-store"}
         if memory.visibility != "public" or memory.status != "active"

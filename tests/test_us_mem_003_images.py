@@ -245,8 +245,8 @@ def test_private_and_deleted_memory_images_are_not_available_to_others(image_con
     assert parse_qs(parsed.query)["sig"]
 
     assert client.get(f"/api/memories/{memory_id}/images").status_code == 404
-    assert client.get(media_url).status_code == 404
-    assert client.get(media_url, headers={"Authorization": f"Bearer {other_token}"}).status_code == 404
+    assert client.get(media_url).status_code == 403
+    assert client.get(media_url, headers={"Authorization": f"Bearer {other_token}"}).status_code == 403
     assert client.get(media_url, headers={"Authorization": f"Bearer {owner_token}"}).status_code == 200
 
     memory = db_session.get(Memory, memory_id)
