@@ -157,6 +157,9 @@ app.include_router(hashtags_router)        # US-MEM-010
 
 app.include_router(login_router)
 
+from app.modules.explore.hashtag_router import router as explore_hashtag_router
+
+app.include_router(explore_hashtag_router)
 
 # ----- API chưa được xây dựng
 
