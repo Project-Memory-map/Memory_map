@@ -243,8 +243,8 @@ def test_private_or_deleted_video_stream_is_not_available_without_owner(video_co
     assert response.status_code == 200
     url = response.json()["data"]["url"]
 
-    assert client.get(url).status_code == 404
-    assert client.get(url, headers={"Authorization": f"Bearer {other_token}"}).status_code == 404
+    assert client.get(url).status_code == 403
+    assert client.get(url, headers={"Authorization": f"Bearer {other_token}"}).status_code == 403
     assert client.get(url, headers={"Authorization": f"Bearer {owner_token}"}).status_code == 200
 
     memory = db_session.get(Memory, memory_id)
