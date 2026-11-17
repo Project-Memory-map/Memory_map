@@ -150,7 +150,9 @@ app.include_router(memory_videos_router)   # US-MEM-004
 # ----- Router đăng nhập của Trí
 
 app.include_router(login_router)
+from app.modules.explore.region_router import router as explore_region_router
 
+app.include_router(explore_region_router)
 
 # ----- API chưa được xây dựng
 
