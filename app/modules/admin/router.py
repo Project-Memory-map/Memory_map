@@ -8,8 +8,8 @@ Mọi route đều qua get_current_admin (đăng nhập + role = 'admin').
 | US-ADM-001 | GET  /api/admin/stats                                     | admin.js  | ✅ |
 | US-ADM-001 | GET  /api/admin/memories?q=&status=                       | admin.js  | ✅ |
 | US-ADM-001 | POST /api/admin/memories/{id}/hide · /unhide              | admin.js  | ✅ |
+| US-ADM-002 | POST /api/admin/memories/{id}/delete                      | admin.js  | ✅ |
 | US-ADM-001→003 | GET /api/admin/actions?action=  (nhật ký thao tác)    | admin.js  | ✅ |
-| US-ADM-002 | POST /api/admin/memories/{id}/delete                      | admin.js  | ⏳ |
 | US-ADM-003 | GET  /api/admin/users?q=                                  | admin.js  | ⏳ |
 | US-ADM-003 | POST /api/admin/users/{id}/lock · /unlock                 | admin.js  | ⏳ |
 
@@ -68,7 +68,7 @@ def get_current_admin(user: User = Depends(get_current_user)) -> User:
 # ----- Dữ liệu gửi lên
 
 class ReasonRequest(BaseModel):
-    """Lý do bắt buộc cho thao tác ẩn (BR-10)."""
+    """Lý do bắt buộc cho thao tác ẩn / xóa (BR-10)."""
 
     reason: str | None = Field(default=None, validate_default=True)  # thiếu trường cũng phải báo lỗi
 
@@ -283,6 +283,32 @@ def admin_unhide_memory(
         db.rollback()
         raise
     return build_response(200, "Đã bỏ ẩn ký ức", request, data={"id": memory.id, "status": memory.status})
+
+
+# ----- US-ADM-002: xóa ký ức vi phạm nghiêm trọng
+
+@router.post("/memories/{memory_id}/delete")
+def admin_delete_memory(
+    memory_id: int,
+    payload: ReasonRequest,
+    request: Request,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """Xóa mềm (BR-13): đặt deleted_at, giữ dữ liệu để đối chiếu nhật ký.
+
+    Mọi màn hình (chi tiết, ảnh/video, bản đồ, khám phá, chuyến đi) đã lọc deleted_at nên
+    ký ức biến mất khỏi tất cả, kể cả với chủ ký ức. Xóa được cả ký ức đang bị ẩn.
+    """
+    try:
+        memory = _load_public_memory(db, memory_id)
+        memory.deleted_at = _now()
+        _log(db, admin, "delete_memory", "memory", memory.id, payload.reason)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return build_response(200, "Đã xóa ký ức", request, data={"id": memory.id})
 
 
 # ----- US-ADM-001→003: nhật ký thao tác
