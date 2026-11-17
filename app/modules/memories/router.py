@@ -103,7 +103,8 @@ def get_memory(
 ):
     memory = load_memory(db, memory_id)
     is_owner = viewer is not None and viewer.id == memory.user_id
-    if not is_owner and (memory.visibility != "public" or memory.status == "hidden"):
+    author_locked = memory.author is not None and memory.author.status == "locked"  # US-ADM-003
+    if not is_owner and (memory.visibility != "public" or memory.status == "hidden" or author_locked):
         raise NotFoundException("Không tìm thấy ký ức")
     return build_response(200, "Thành công", request, data=serialize_memory(db, memory, viewer))
 

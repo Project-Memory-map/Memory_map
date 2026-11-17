@@ -9,9 +9,9 @@ Mọi route đều qua get_current_admin (đăng nhập + role = 'admin').
 | US-ADM-001 | GET  /api/admin/memories?q=&status=                       | admin.js  | ✅ |
 | US-ADM-001 | POST /api/admin/memories/{id}/hide · /unhide              | admin.js  | ✅ |
 | US-ADM-002 | POST /api/admin/memories/{id}/delete                      | admin.js  | ✅ |
+| US-ADM-003 | GET  /api/admin/users?q=&status=                          | admin.js  | ✅ |
+| US-ADM-003 | POST /api/admin/users/{id}/lock · /unlock                 | admin.js  | ✅ |
 | US-ADM-001→003 | GET /api/admin/actions?action=  (nhật ký thao tác)    | admin.js  | ✅ |
-| US-ADM-003 | GET  /api/admin/users?q=                                  | admin.js  | ⏳ |
-| US-ADM-003 | POST /api/admin/users/{id}/lock · /unlock                 | admin.js  | ⏳ |
 
 Bảng dùng: admin_actions (models.py) + memories, users.
 Trigger trong MySQL cũng chặn: không có lý do (BR-10), admin tự khóa mình (BR-11), sửa/xóa nhật ký.
@@ -68,7 +68,7 @@ def get_current_admin(user: User = Depends(get_current_user)) -> User:
 # ----- Dữ liệu gửi lên
 
 class ReasonRequest(BaseModel):
-    """Lý do bắt buộc cho thao tác ẩn / xóa (BR-10)."""
+    """Lý do bắt buộc cho thao tác ẩn / xóa / khóa (BR-10)."""
 
     reason: str | None = Field(default=None, validate_default=True)  # thiếu trường cũng phải báo lỗi
 
@@ -84,7 +84,7 @@ class ReasonRequest(BaseModel):
 
 
 class OptionalReasonRequest(BaseModel):
-    """Bỏ ẩn: lý do không bắt buộc."""
+    """Bỏ ẩn / mở khóa: lý do không bắt buộc."""
 
     reason: str | None = None
 
@@ -309,6 +309,132 @@ def admin_delete_memory(
         db.rollback()
         raise
     return build_response(200, "Đã xóa ký ức", request, data={"id": memory.id})
+
+
+# ----- US-ADM-003: danh sách tài khoản
+
+def _load_user(db: Session, user_id: int) -> User:
+    user = db.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if user is None:
+        raise NotFoundException("Không tìm thấy tài khoản")
+    return user
+
+
+def _serialize_user(user: User, memory_count: int) -> dict:
+    return {
+        "id": user.id,
+        "display_name": user.display_name,
+        "email": user.email,
+        "role": user.role,
+        "status": user.status,
+        "memory_count": memory_count,
+        "created_at": user.created_at,
+    }
+
+
+@router.get("/users")
+def admin_list_users(
+    request: Request,
+    q: str | None = Query(None, max_length=100),
+    status: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    stmt = select(User)
+    if status in ("active", "locked"):
+        stmt = stmt.where(User.status == status)
+    elif status:
+        raise ValidationException("Trạng thái không hợp lệ")
+    keyword = _keyword(q)
+    if keyword:
+        stmt = stmt.where(
+            or_(
+                User.email.ilike(keyword, escape="!"),
+                User.display_name.ilike(keyword, escape="!"),
+            )
+        )
+
+    total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+    users = db.scalars(
+        stmt.order_by(User.created_at.desc(), User.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+
+    counts: dict[int, int] = {}
+    ids = [u.id for u in users]
+    if ids:
+        rows = db.execute(
+            select(Memory.user_id, func.count(Memory.id))
+            .where(Memory.user_id.in_(ids), Memory.deleted_at.is_(None))
+            .group_by(Memory.user_id)
+        ).all()
+        counts = {user_id: count for user_id, count in rows}
+
+    items = [_serialize_user(u, counts.get(u.id, 0)) for u in users]
+    return build_response(200, "Thành công", request, data=_page_data(items, total, page, page_size))
+
+
+# ----- US-ADM-003: khóa / mở khóa tài khoản
+
+@router.post("/users/{user_id}/lock")
+def admin_lock_user(
+    user_id: int,
+    payload: ReasonRequest,
+    request: Request,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """Khóa tài khoản vi phạm.
+
+    - Đăng xuất ngay: tăng token_version nên mọi JWT cũ hết hiệu lực (BR-20). Trigger trg_users_bu
+      trong MySQL cũng tăng, nhưng nó đặt NEW = OLD + 1 nên không bị tăng hai lần.
+    - Không đăng nhập lại được: login / Facebook / get_current_user đều chặn status = 'locked'.
+    - Ký ức công khai bị ẩn khỏi cộng đồng: mọi truy vấn công khai lọc tác giả status = 'active'.
+      Không sửa memories.status, nên mở khóa là ký ức hiện lại nguyên trạng.
+    """
+    if user_id == admin.id:
+        raise ValidationException("Bạn không thể khóa chính tài khoản của mình")  # BR-11
+    try:
+        user = _load_user(db, user_id)
+        if user.status == "locked":
+            raise ConflictException("Tài khoản này đã bị khóa")
+        user.status = "locked"
+        user.token_version = (user.token_version or 0) + 1
+        _log(db, admin, "lock_user", "user", user.id, payload.reason)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return build_response(200, "Đã khóa tài khoản", request, data={"id": user.id, "status": user.status})
+
+
+@router.post("/users/{user_id}/unlock")
+def admin_unlock_user(
+    user_id: int,
+    request: Request,
+    payload: OptionalReasonRequest | None = None,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    try:
+        user = _load_user(db, user_id)
+        if user.status != "locked":
+            raise ConflictException("Tài khoản này đang hoạt động, không cần mở khóa")
+        user.status = "active"
+        _log(db, admin, "unlock_user", "user", user.id, payload.reason if payload else None)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return build_response(200, "Đã mở khóa tài khoản", request, data={"id": user.id, "status": user.status})
 
 
 # ----- US-ADM-001→003: nhật ký thao tác

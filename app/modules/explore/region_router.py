@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.response import build_response
+from app.modules.accounts.models import User
 from app.modules.explore.models import Region
 from app.modules.memories.models import Hashtag, Memory, MemoryHashtag
 
@@ -59,6 +60,7 @@ def get_explore_regions(
             Memory.deleted_at.is_(None),
             Memory.visibility == "public",
             Memory.status == "active",
+            Memory.author.has(User.status == "active"),  # US-ADM-003: ẩn ký ức của tài khoản bị khóa
             Memory.region_id.is_not(None),
         )
         .group_by(Memory.region_id)
@@ -107,6 +109,7 @@ def explore_public_memories_by_region(
         Memory.deleted_at.is_(None),
         Memory.visibility == "public",
         Memory.status == "active",
+        Memory.author.has(User.status == "active"),  # US-ADM-003: ẩn ký ức của tài khoản bị khóa
     )
 
     if region is not None:

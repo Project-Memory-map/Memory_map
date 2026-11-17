@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.response import build_response
+from app.modules.accounts.models import User
 from app.modules.memories.models import Hashtag, Memory, MemoryHashtag
 
 router = APIRouter(tags=["M3 - Khám phá"])
@@ -62,6 +63,7 @@ def get_popular_hashtags(
             Memory.deleted_at.is_(None),
             Memory.visibility == "public",
             Memory.status == "active",
+            Memory.author.has(User.status == "active"),  # US-ADM-003: ẩn ký ức của tài khoản bị khóa
         )
         .group_by(Hashtag.id, Hashtag.name)
         .order_by(func.count(func.distinct(Memory.id)).desc(), Hashtag.name.asc())
@@ -92,6 +94,7 @@ def explore_public_memories(
         Memory.deleted_at.is_(None),
         Memory.visibility == "public",
         Memory.status == "active",
+        Memory.author.has(User.status == "active"),  # US-ADM-003: ẩn ký ức của tài khoản bị khóa
     )
 
     if normalized_tags:
