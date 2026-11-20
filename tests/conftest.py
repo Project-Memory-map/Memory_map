@@ -32,3 +32,12 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _nominatim_khong_cho(monkeypatch):
+    """BR-19 giới hạn 1 yêu cầu/giây tới Nominatim; trong test dịch vụ là giả nên bỏ thời gian chờ."""
+    from app.modules.memories.services import nominatim_gate
+
+    monkeypatch.setattr(nominatim_gate, "MIN_INTERVAL_SECONDS", 0.0)
+    nominatim_gate.reset()

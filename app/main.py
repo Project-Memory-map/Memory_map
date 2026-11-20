@@ -18,9 +18,12 @@ from app.core.response import build_response
 from app.models import register_models
 from app.modules.accounts.login_router import router as login_router
 from app.modules.accounts.facebook_router import router as facebook_router
+from app.modules.accounts.google_router import router as google_router
 from app.modules.accounts.logout_router import router as logout_router
 from app.modules.accounts.password_router import router as password_router
+from app.modules.accounts.password_reset_router import router as password_reset_router
 from app.modules.accounts.router import router as accounts_router
+from app.modules.accounts.users_router import router as users_router
 from app.modules.admin.router import router as admin_router
 from app.modules.explore.router import router as explore_router
 from app.modules.memories.hashtags_router import router as hashtags_router
@@ -142,8 +145,11 @@ for module_name, module_router in MODULE_ROUTERS.items():
         name=f"{module_name}-ui",
     )
 
+app.include_router(google_router)          # US-ACC-003
 app.include_router(facebook_router)        # US-ACC-004
 app.include_router(password_router)        # US-ACC-007
+app.include_router(password_reset_router)  # US-ACC-005
+app.include_router(users_router)           # US-ACC-006
 app.include_router(logout_router)          # US-ACC-008
 app.include_router(memory_create_router)   # US-MEM-002
 app.include_router(memory_images_router)   # US-MEM-003

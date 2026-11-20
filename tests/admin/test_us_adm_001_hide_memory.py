@@ -9,6 +9,9 @@ def test_non_admin_and_guest_are_rejected(ctx):
     assert ctx.client.post(url, json={"reason": "x"}, headers=ctx.headers(ctx.other)).status_code == 403
     assert ctx.client.get("/api/admin/memories", headers=ctx.headers(ctx.other)).status_code == 403
     assert ctx.client.get("/api/admin/stats", headers=ctx.headers(ctx.other)).status_code == 403
+    # AC4: thông báo đúng câu chữ
+    res = ctx.client.get("/api/admin/memories", headers=ctx.headers(ctx.other))
+    assert res.json()["message"] == "Bạn không có quyền truy cập"
 
 
 def test_list_shows_only_public_memories_with_search_and_status(ctx):

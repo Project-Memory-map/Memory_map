@@ -1,6 +1,7 @@
-"""US-MEM-002 – Tạo ký ức bằng chọn vị trí trên bản đồ (T05B579).
+"""US-MEM-001 / US-MEM-002 – Tạo ký ức bằng tìm địa điểm hoặc chọn vị trí trên bản đồ.
 
-Luồng trên giao diện (memories.js): nhấp bản đồ hoặc nút "Chọn trên bản đồ" → ghim tím
+Tìm theo tên (shell.js, memories.js): GET /api/geocode?q= → chọn kết quả → POST /api/memories.
+Chọn trên bản đồ (memories.js): nhấp bản đồ hoặc nút "Chọn trên bản đồ" → ghim tím
 (kéo để chỉnh) → GET /api/geocode/reverse điền sẵn tên địa điểm → POST /api/memories.
 Ảnh/video gửi sau qua /api/memories/{id}/images và /video (US-MEM-003/004).
 """
@@ -14,8 +15,10 @@ from app.core.errors import ServiceUnavailableException, ValidationException
 from app.core.response import build_response
 from app.modules.accounts.deps import get_current_user
 from app.modules.accounts.models import User
+from app.modules.explore.region_lookup import region_id_for
 from app.modules.memories.models import Memory
 from app.modules.memories.router import serialize_memory
+from app.modules.memories.services.place_search_service import PlaceSearchError, search_places
 from app.modules.memories.services.reverse_geocode_service import GeocodeUnavailable, reverse_geocode
 
 router = APIRouter(tags=["M2 - Ký ức"])
@@ -31,6 +34,20 @@ def _check_coordinates(latitude: float | None, longitude: float | None) -> tuple
     if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
         raise ValidationException("Tọa độ không hợp lệ")
     return round(latitude, 6), round(longitude, 6)
+
+
+# ----- US-MEM-001: tìm địa điểm theo tên -----
+PLACE_NOT_FOUND = "Không tìm thấy địa điểm. Hãy thử tên khác hoặc chọn trực tiếp trên bản đồ"
+
+
+@router.get("/api/geocode")
+def geocode_search(request: Request, q: str | None = Query(None)):
+    try:
+        places = search_places(q)
+    except PlaceSearchError as exc:
+        error_class = ValidationException if exc.status_code == 422 else ServiceUnavailableException
+        raise error_class(exc.message) from None
+    return build_response(200, "Thành công" if places else PLACE_NOT_FOUND, request, data=places)
 
 
 # ----- Đổi tọa độ thành tên địa điểm -----
@@ -90,6 +107,7 @@ def create_memory(
         place_name=place_name[:PLACE_MAX],
         latitude=latitude,
         longitude=longitude,
+        region_id=region_id_for(db, latitude, longitude),  # US-EXP-003: tỉnh/thành theo ranh giới GeoJSON
         visibility=visibility,  # BR-01: mặc định riêng tư
         status="active",
     )

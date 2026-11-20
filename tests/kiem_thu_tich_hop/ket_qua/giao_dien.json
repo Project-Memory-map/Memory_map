@@ -1,0 +1,273 @@
+{
+ "edgeVersion": "157.0.4341.60",
+ "devices": {
+  "Máy tính": "1366×800",
+  "Điện thoại": "giả lập Pixel 7 (412×915, cảm ứng)"
+ },
+ "results": {
+  "US-ACC-001 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chuyển tới /ban-do, thông báo 'Đăng ký thành công' (ảnh ACC001_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chuyển tới /ban-do, thông báo 'Đăng ký thành công' (ảnh ACC001_AC1_dien_thoai.png)"
+   }
+  },
+  "US-ACC-002 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "trang /ban-do; tên 'Chủ UI may_tinh' đang hiện (ảnh ACC002_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "trang /ban-do; tên 'Chủ UI dien_thoai' có trong menu (thu gọn trên màn hình nhỏ) (ảnh ACC002_AC1_dien_thoai.png)"
+   }
+  },
+  "US-MEM-005 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "tiêu đề 'Chiều thu Hà Nội', ngày 12/10/2025=true, ảnh hiển thị 3/3, hashtag=true, nút Sửa=true, Xóa=true (ảnh MEM005_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "tiêu đề 'Chiều thu Hà Nội', ngày 12/10/2025=true, ảnh hiển thị 3/3, hashtag=true, nút Sửa=true, Xóa=true (ảnh MEM005_AC1_dien_thoai.png)"
+   }
+  },
+  "US-MEM-003 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chi tiết hiển thị 3/3 ảnh (ảnh MEM005_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chi tiết hiển thị 3/3 ảnh (ảnh MEM005_AC1_dien_thoai.png)"
+   }
+  },
+  "US-MEM-004 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "thẻ video có trên trang chi tiết, nguồn 'blob:/5fcf32a1-0af1-4345-aec9-f147b0d5a518'; tải video qua mạng: /api/media/26/stream → 200 (tệp thử không phải video thật nên không kiểm được hình/tiếng) (ảnh MEM004_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "thẻ video có trên trang chi tiết, nguồn 'blob:/f8009926-a1cb-4505-9a73-210015795854'; tải video qua mạng: /api/media/30/stream → 200 (tệp thử không phải video thật nên không kiểm được hình/tiếng) (ảnh MEM004_AC1_dien_thoai.png)"
+   }
+  },
+  "US-MEM-005 AC4": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chủ ký ức thấy '⚠️ Đã bị quản trị viên ẩn — ký ức này không còn hiển thị trên bản đồ cộng đồng.' (ảnh MEM005_AC4_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chủ ký ức thấy '⚠️ Đã bị quản trị viên ẩn — ký ức này không còn hiển thị trên bản đồ cộng đồng.' (ảnh MEM005_AC4_dien_thoai.png)"
+   }
+  },
+  "US-MEM-007 AC2": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "sau khi bấm Hủy, ký ức → 200 (ảnh hộp xác nhận MEM007_AC2_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "sau khi bấm Hủy, ký ức → 200 (ảnh hộp xác nhận MEM007_AC2_dien_thoai.png)"
+   }
+  },
+  "US-MEM-002 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "nhấp đúp bản đồ → form tạo ký ức mở (ảnh MEM002_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chạm giữ bản đồ → form tạo ký ức mở (ảnh MEM002_AC1_dien_thoai.png)"
+   }
+  },
+  "US-MEM-001 AC3": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "'Không tìm thấy địa điểm. Hãy thử tên khác hoặc chọn trực tiếp trên bản đồ' (ảnh MEM001_AC3_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "'Không tìm thấy địa điểm. Hãy thử tên khác hoặc chọn trực tiếp trên bản đồ' (ảnh MEM001_AC3_dien_thoai.png)"
+   }
+  },
+  "US-MEM-001 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "tìm 'Hồ Gươm' → chọn kết quả đầu → lưu: ghim tại (21.028831, 105.852536) đúng Hồ Gươm=true, chế độ=private, chi tiết hiện 12/10/2025=true (ảnh MEM001_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "tìm 'Hồ Gươm' → chọn kết quả đầu → lưu: ghim tại (21.028831, 105.852536) đúng Hồ Gươm=true, chế độ=private, chi tiết hiện 12/10/2025=true (ảnh MEM001_AC1_dien_thoai.png)"
+   }
+  },
+  "US-ACC-006 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "lưu → 'Đã cập nhật hồ sơ'; ký ức công khai hiện tên 'Dread may_tinh' (ảnh ACC006_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "lưu → 'Đã cập nhật hồ sơ'; ký ức công khai hiện tên 'Dread dien_thoai' (ảnh ACC006_AC1_dien_thoai.png)"
+   }
+  },
+  "US-ACC-006 AC4": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chọn ảnh 6 MB → 'Ảnh không được vượt quá 5 MB' (ảnh ACC006_AC5_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chọn ảnh 6 MB → 'Ảnh không được vượt quá 5 MB' (ảnh ACC006_AC5_dien_thoai.png)"
+   }
+  },
+  "US-ACC-006 AC5": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chọn baocao.pdf → 'Định dạng tệp không được hỗ trợ' (ảnh ACC006_AC5_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chọn baocao.pdf → 'Định dạng tệp không được hỗ trợ' (ảnh ACC006_AC5_dien_thoai.png)"
+   }
+  },
+  "US-ADM-001 AC4": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "người dùng thường mở /admin/ → trang /ban-do, có chữ 'Bạn không có quyền truy cập'=true (ảnh ADM001_AC4_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "người dùng thường mở /admin/ → trang /ban-do, có chữ 'Bạn không có quyền truy cập'=true (ảnh ADM001_AC4_dien_thoai.png)"
+   }
+  },
+  "Trang quản trị": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "bảng ký ức có 20 dòng, tràn ngang 0px (ảnh quan_tri_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "bảng ký ức có 20 dòng, tràn ngang 0px (ảnh quan_tri_dien_thoai.png)"
+   }
+  },
+  "US-ACC-008 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "chuyển tới /accounts/login.html, còn hiện tên=false, còn token=false (ảnh ACC008_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "chuyển tới /accounts/login.html, còn hiện tên=false, còn token=false (ảnh ACC008_AC1_dien_thoai.png)"
+   }
+  },
+  "US-ACC-008 AC3": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "bấm Back → /accounts/login.html?next=%2Faccounts%2Fprofile.html, lộ thông tin cá nhân=false (ảnh ACC008_AC3_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "bấm Back → /accounts/login.html?next=%2Faccounts%2Fprofile.html, lộ thông tin cá nhân=false (ảnh ACC008_AC3_dien_thoai.png)"
+   }
+  },
+  "US-ACC-008 AC2": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "mở lại hồ sơ → /accounts/login.html, lộ thông tin=false (ảnh ACC008_AC2_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "mở lại hồ sơ → /accounts/login.html, lộ thông tin=false (ảnh ACC008_AC2_dien_thoai.png)"
+   }
+  },
+  "US-ACC-005 AC1": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "thông báo 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu', liên kết đặt lại hiện ở chế độ dev (ảnh ACC005_AC1_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "thông báo 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu', liên kết đặt lại hiện ở chế độ dev (ảnh ACC005_AC1_dien_thoai.png)"
+   }
+  },
+  "US-ACC-005 AC3": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "'Đặt lại mật khẩu thành công, bạn có thể đăng nhập bằng mật khẩu mới'; đăng nhập bằng mật khẩu mới → 200 (ảnh ACC005_AC3_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "'Đặt lại mật khẩu thành công, bạn có thể đăng nhập bằng mật khẩu mới'; đăng nhập bằng mật khẩu mới → 200 (ảnh ACC005_AC3_dien_thoai.png)"
+   }
+  },
+  "US-ACC-005 AC4": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "mở link gửi 31 phút trước → 'Liên kết đã hết hạn, vui lòng yêu cầu lại', ô mật khẩu bị khóa=true (ảnh ACC005_AC4_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "mở link gửi 31 phút trước → 'Liên kết đã hết hạn, vui lòng yêu cầu lại', ô mật khẩu bị khóa=true (ảnh ACC005_AC4_dien_thoai.png)"
+   }
+  },
+  "US-MEM-002 AC3": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "khách nhấp đúp → 'Cần đăng nhậpBạn cần đăng nhập để ghim ký ức tại vị trí này.Để sauĐăng nhập' (ảnh MEM002_AC3_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "khách chạm giữ → 'Cần đăng nhậpBạn cần đăng nhập để ghim ký ức tại vị trí này.Để sauĐăng nhập' (ảnh MEM002_AC3_dien_thoai.png)"
+   }
+  },
+  "US-EXP-001 AC2": {
+   "Máy tính": {
+    "status": "ĐẠT",
+    "detail": "danh sách: '🧭\nChưa có ký ức công khai trong khu vực này' (ảnh EXP001_AC2_may_tinh.png)"
+   },
+   "Điện thoại": {
+    "status": "ĐẠT",
+    "detail": "danh sách: '🧭\nChưa có ký ức công khai trong khu vực này' (ảnh EXP001_AC2_dien_thoai.png)"
+   }
+  }
+ },
+ "pageChecks": {
+  "Máy tính /": {
+   "overflow": 0
+  },
+  "Máy tính /ban-do": {
+   "overflow": 0
+  },
+  "Máy tính /accounts/login.html": {
+   "overflow": 0
+  },
+  "Máy tính /accounts/register.html": {
+   "overflow": 0
+  },
+  "Máy tính /accounts/forgot-password.html": {
+   "overflow": 0
+  },
+  "Máy tính lỗi JavaScript": [],
+  "Điện thoại /": {
+   "overflow": 0
+  },
+  "Điện thoại /ban-do": {
+   "overflow": 0
+  },
+  "Điện thoại /accounts/login.html": {
+   "overflow": 0
+  },
+  "Điện thoại /accounts/register.html": {
+   "overflow": 0
+  },
+  "Điện thoại /accounts/forgot-password.html": {
+   "overflow": 0
+  },
+  "Điện thoại lỗi JavaScript": []
+ }
+}

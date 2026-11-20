@@ -86,12 +86,12 @@
 
     <section class="card" data-panel="info" hidden>
       <h2>Ảnh đại diện</h2>
-      <p class="muted" style="margin-bottom:16px">Ảnh .jpg, .png, .heic, tối đa 5 MB. Thông tin vị trí (EXIF/GPS) trong ảnh được xóa trước khi lưu.</p>
+      <p class="muted" style="margin-bottom:16px">Ảnh .jpg, .png, .webp, .gif, tối đa 5 MB. Thông tin vị trí (EXIF/GPS) trong ảnh được xóa trước khi lưu.</p>
       <form id="avatar-form" class="form" enctype="multipart/form-data" data-endpoint="/api/users/me/avatar" data-success="Đã cập nhật ảnh đại diện" novalidate>
         <div class="avatar-editor">
           <span id="avatar-preview"></span>
           <label class="field" style="flex:1;min-width:220px">Chọn ảnh
-            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.heic,image/jpeg,image/png,image/heic" required>
+            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" required>
           </label>
         </div>
         <p class="form-message" hidden></p>

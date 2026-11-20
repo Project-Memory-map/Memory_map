@@ -29,6 +29,23 @@ class Settings(BaseSettings):
     jwt_secret: str = "doi-chuoi-nay-trong-file-env"
     access_token_minutes: int = 60 * 24
 
+    # Địa chỉ trang web (dùng để tạo liên kết trong email đặt lại mật khẩu)
+    app_base_url: str = "http://127.0.0.1:8000"
+
+    # SMTP gửi email (US-ACC-005). Để trống ở dev: API trả dev_reset_url để thử mà không cần gửi mail
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    smtp_ssl: bool = False
+
+    # Google OAuth (US-ACC-003)
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://127.0.0.1:8000/api/auth/google/callback"
+    google_http_timeout_seconds: float = 5.0
+
     # Facebook OAuth (US-ACC-004) & Media (US-MEM-003 / US-MEM-004)
     facebook_app_id: str = ""
     facebook_app_secret: str = ""

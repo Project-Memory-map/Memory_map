@@ -123,3 +123,10 @@ def test_cannot_delete_private_or_missing_memory(ctx):
         assert _delete(ctx, memory_id).status_code == 404
     ctx.db.expire_all()
     assert ctx.db.get(Memory, ctx.private_memory.id).deleted_at is None
+
+
+def test_ac3_ky_uc_da_bi_chu_xoa_bao_khong_ton_tai(ctx):
+    memory_id = ctx.public_memory.id
+    assert ctx.client.delete(f"/api/memories/{memory_id}", headers=ctx.headers(ctx.owner)).status_code == 200
+    res = _delete(ctx, memory_id)
+    assert res.status_code == 404 and res.json()["message"] == "Ký ức không tồn tại"

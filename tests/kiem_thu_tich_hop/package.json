@@ -1,0 +1,14 @@
+{
+  "name": "kiem-thu-tich-hop",
+  "private": true,
+  "description": "Kiểm thử giao diện (Edge, máy tính + điện thoại) và xuất báo cáo Excel cho 108 AC",
+  "type": "module",
+  "scripts": {
+    "giao-dien": "node kiem_thu_giao_dien.mjs",
+    "bao-cao": "node tao_bao_cao.mjs"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "playwright-core": "1.56.1"
+  }
+}

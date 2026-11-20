@@ -12,6 +12,7 @@ from threading import Lock
 import httpx
 
 from app.core.config import settings
+from app.modules.memories.services.nominatim_gate import NominatimBusy, wait_for_slot
 
 logger = logging.getLogger("bandokyuc.geocode")
 
@@ -59,6 +60,7 @@ def _to_place(item: dict, latitude: float, longitude: float) -> dict | None:
 
 def _fetch(latitude: float, longitude: float) -> dict:
     try:
+        wait_for_slot()  # BR-19: tối đa 1 yêu cầu/giây toàn hệ thống
         response = httpx.get(
             f"{settings.nominatim_url.rstrip('/')}/reverse",
             params={
@@ -74,6 +76,8 @@ def _fetch(latitude: float, longitude: float) -> dict:
         )
         response.raise_for_status()
         return response.json()
+    except NominatimBusy as exc:
+        raise GeocodeUnavailable from exc
     except (httpx.HTTPError, ValueError) as exc:
         logger.warning("Reverse geocode lỗi tại %s,%s: %s", latitude, longitude, exc)
         raise GeocodeUnavailable from exc

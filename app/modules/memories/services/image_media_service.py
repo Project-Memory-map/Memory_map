@@ -8,6 +8,7 @@ from fastapi import UploadFile
 
 from app.core.config import settings
 from app.core.security import sign_media_url, verify_media_signature
+from app.modules.memories.services.image_metadata import strip_metadata
 
 MAX_IMAGE_COUNT = 10
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
@@ -67,6 +68,7 @@ async def stage_images(files: list[UploadFile]) -> list[StagedImage]:
                 raise ImageUploadError("Mỗi ảnh không được vượt quá 5 MB")
             if not expected[1](content):
                 raise ImageUploadError("Định dạng tệp không được hỗ trợ")
+            content = strip_metadata(content, extension)  # bỏ EXIF/GPS: ảnh công khai không lộ vị trí chụp
 
             relative_path = f"images/{uuid.uuid4().hex}{extension}"
             target = resolve_upload_path(relative_path)

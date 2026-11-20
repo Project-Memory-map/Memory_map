@@ -55,21 +55,37 @@ const MemoryMap = (() => {
     });
 
     let pressTimer = null;
+    let longPressFired = false;
     const container = map.getContainer();
     container.addEventListener(
       "touchstart",
       (event) => {
+        longPressFired = false;
         if (event.touches.length !== 1) {
           clearTimeout(pressTimer);
           return;
         }
         const touch = event.touches[0];
         const latlng = map.containerPointToLatLng(map.mouseEventToContainerPoint(touch));
-        pressTimer = setTimeout(() => emitPick(latlng), LONG_PRESS_MS);
+        pressTimer = setTimeout(() => {
+          longPressFired = true;
+          emitPick(latlng);
+        }, LONG_PRESS_MS);
       },
       { passive: true },
     );
-    ["touchend", "touchmove", "touchcancel"].forEach((name) =>
+    // Sau khi chạm giữ đã mở hộp thoại/form, chặn cú click trình duyệt sinh ra lúc nhấc tay:
+    // nếu không, click rơi trúng nút trong hộp thoại vừa mở (vd "Để sau") và đóng nó ngay (US-MEM-002 AC3)
+    container.addEventListener(
+      "touchend",
+      (event) => {
+        clearTimeout(pressTimer);
+        if (longPressFired && event.cancelable) event.preventDefault();
+        longPressFired = false;
+      },
+      { passive: false },
+    );
+    ["touchmove", "touchcancel"].forEach((name) =>
       container.addEventListener(name, () => clearTimeout(pressTimer), { passive: true }),
     );
     map.on("movestart zoomstart", () => clearTimeout(pressTimer));

@@ -1,0 +1,293 @@
+{
+ "ghi_chu": "Lỗi ghi nhận khi kiểm thử tích hợp 108 AC (task T05B58C) và trạng thái sau khi sửa. Sửa thêm lỗi nào thì cập nhật trang_thai/cach_sua rồi chạy lại tao_bao_cao.mjs.",
+ "loi": [
+  {
+   "ma": "L01",
+   "muc_do": "Cao",
+   "loai": "Thiếu chức năng",
+   "ac": [
+    "US-ACC-003 AC1",
+    "US-ACC-003 AC2",
+    "US-ACC-003 AC3",
+    "US-ACC-003 AC4"
+   ],
+   "tieu_de": "Chưa có đăng nhập bằng Google",
+   "mo_ta": "Nút 'Đăng nhập bằng Google' gọi /api/auth/google/login nhưng backend chưa có API này, trả 404 'Chức năng này chưa được xây dựng'. /api/auth/providers báo google=false.",
+   "tai_hien": "GET /api/auth/google/login → 404.",
+   "vi_tri": "app/modules/accounts/ (chưa có google_router); login.html gọi sẵn",
+   "de_xuat": "Làm google_router theo mẫu facebook_router.py (OAuth, liên kết theo email, chặn tài khoản locked, ?error= khi từ chối). Cần Google Client ID/Secret trong .env.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm google_router.py + services/google_auth.py (OAuth phía máy chủ như Facebook, chỉ tự liên kết khi Google xác nhận email đã xác thực). Cấu hình GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI trong .env. Test: tests/accounts/test_us_acc_003_google.py (10 ca)."
+  },
+  {
+   "ma": "L02",
+   "muc_do": "Cao",
+   "loai": "Thiếu chức năng",
+   "ac": [
+    "US-ACC-005 AC1",
+    "US-ACC-005 AC2",
+    "US-ACC-005 AC3",
+    "US-ACC-005 AC4"
+   ],
+   "tieu_de": "Chưa có quên mật khẩu / đặt lại mật khẩu",
+   "mo_ta": "Trang forgot-password.html và reset-password.html gọi /api/auth/forgot-password và /api/auth/reset-password nhưng backend chưa có. Bảng password_reset_tokens đã có sẵn.",
+   "tai_hien": "POST /api/auth/forgot-password → 404 'Chức năng này chưa được xây dựng'.",
+   "vi_tri": "app/modules/accounts/ (chưa có router); model PasswordResetToken trong accounts/models.py",
+   "de_xuat": "Làm 2 API: tạo token (lưu SHA-256, hạn 30 phút, cùng một thông báo cho email có/không tồn tại), đặt lại (kiểm hạn, đánh dấu used_at, đổi password_hash). Gửi mail qua SMTP (Mailtrap khi thử).",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm password_reset_router.py (chuyển từ reset_feature.py của Lê Minh Trí): forgot-password, validate-reset-token, reset-password; token lưu SHA-256, hạn 30 phút, dùng 1 lần, tối đa 1 lần/60 giây; dev chưa có SMTP thì trả dev_reset_url. accounts.js kiểm link ngay khi mở trang. Cấu hình SMTP_* trong .env. Test: test_us_acc_005_reset_password.py (10 ca)."
+  },
+  {
+   "ma": "L03",
+   "muc_do": "Cao",
+   "loai": "Thiếu chức năng",
+   "ac": [
+    "US-ACC-006 AC1",
+    "US-ACC-006 AC2",
+    "US-ACC-006 AC3",
+    "US-ACC-006 AC4",
+    "US-ACC-006 AC5"
+   ],
+   "tieu_de": "Chưa có cập nhật hồ sơ cá nhân (tên, ảnh đại diện, giới thiệu)",
+   "mo_ta": "profile.js gọi PATCH /api/users/me, /api/users/me/avatar (POST, DELETE) và GET /api/users/me/stats nhưng backend chưa có. Trang hồ sơ không lưu được gì; thống kê trên trang hồ sơ cũng không tải được.",
+   "tai_hien": "PATCH /api/users/me → 404 'Chức năng này chưa được xây dựng'.",
+   "vi_tri": "app/modules/accounts/ (chưa có); app/modules/accounts/js/profile.js đã gọi sẵn",
+   "de_xuat": "Làm 4 API: sửa display_name (≤100 ký tự) và bio, tải ảnh đại diện (≤5 MB, chỉ ảnh), gỡ ảnh, thống kê. Dùng lại image_media_service để kiểm định dạng/dung lượng.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm users_router.py: PATCH /api/users/me, POST/DELETE /api/users/me/avatar, GET /api/users/{id}/avatar, GET /api/users/me/stats. Test: test_us_acc_006_profile.py (10 ca)."
+  },
+  {
+   "ma": "L04",
+   "muc_do": "Cao",
+   "loai": "Thiếu chức năng",
+   "ac": [
+    "US-MEM-001 AC1",
+    "US-MEM-001 AC3"
+   ],
+   "tieu_de": "Chưa có tìm địa điểm theo tên khi tạo ký ức",
+   "mo_ta": "Ô 'Tìm địa điểm' (thanh trên cùng và trong form ký ức) gọi GET /api/geocode?q= nhưng backend chỉ có /api/geocode/reverse. Người dùng chỉ tạo được ký ức bằng cách chọn trên bản đồ.",
+   "tai_hien": "GET /api/geocode?q=Hồ Gươm → 404.",
+   "vi_tri": "app/modules/memories/create_router.py (mới có geocode_reverse); services/reverse_geocode_service.py",
+   "de_xuat": "Thêm GET /api/geocode gọi Nominatim /search (có cache, 1 yêu cầu/giây theo BR-19), trả rỗng kèm thông báo 'Không tìm thấy địa điểm. Hãy thử tên khác hoặc chọn trực tiếp trên bản đồ'.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm GET /api/geocode (services/place_search_service.py, chuyển từ geocode.py của Lê Minh Trí): cache 24 giờ, cổng chung 1 yêu cầu/giây (nominatim_gate.py). Test: tests/memories/test_us_mem_001_geocode_search.py (8 ca)."
+  },
+  {
+   "ma": "L05",
+   "muc_do": "Cao",
+   "loai": "Lỗi",
+   "ac": [
+    "US-EXP-003 AC1",
+    "US-MEM-006 AC2"
+   ],
+   "tieu_de": "Ký ức không bao giờ được gán tỉnh/thành, nên lọc theo khu vực luôn rỗng",
+   "mo_ta": "Không có code nào đặt memories.region_id khi tạo hoặc sửa ký ức. File ranh giới app/modules/explore/data/provinces.geojson (được nhắc trong seed_regions.sql) không có trong repo, requirements.txt chưa có shapely. Hệ quả: lọc 'Lâm Đồng' ra 0 ký ức dù có ký ức ở Đà Lạt; đổi địa điểm không đổi khu vực; số tỉnh/thành ở trang mở đầu (/api/explore/overview) luôn bằng 0.",
+   "tai_hien": "Tạo ký ức công khai tại (11.94, 108.45) → region=null; GET /api/explore/memories?region=<id Lâm Đồng> → total=0.",
+   "vi_tri": "app/modules/memories/create_router.py:85 (tạo), app/modules/memories/router.py:302 (sửa tọa độ)",
+   "de_xuat": "Thêm provinces.geojson + shapely, viết hàm tọa độ → region_id (point-in-polygon), gọi khi tạo và khi đổi tọa độ; chạy một lần để gán cho ký ức cũ.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm app/modules/explore/data/provinces.geojson (34 tỉnh/thành, nguồn ThangLeQuoc/vietnamese-provinces-database – giấy phép MIT, rút gọn còn 201 KB bằng scripts/tao_ranh_gioi_tinh.py) + region_lookup.py (điểm-trong-đa-giác, không cần shapely; ghim sát bờ biển lấy tỉnh gần nhất trong ~5 km). Gán region_id khi tạo và khi đổi tọa độ; scripts/gan_khu_vuc.py gán bù cho ký ức cũ (giữ nguyên updated_at)."
+  },
+  {
+   "ma": "L06",
+   "muc_do": "Trung bình",
+   "loai": "Lỗi tiềm ẩn",
+   "ac": [
+    "US-MEM-003 AC1",
+    "US-MEM-004 AC1",
+    "US-MEM-005 AC1"
+   ],
+   "tieu_de": "API chi tiết ký ức trả link ảnh/video không có chữ ký nên link không mở được",
+   "mo_ta": "GET /api/memories/{id} đang chạy hàm trong memories/router.py (router này được đăng ký trước), trả media.url dạng '/api/media/12' thiếu exp/sig, mở ra lỗi 422. Giao diện hiện vẫn đúng vì memories.js gọi thêm /images và /video để lấy link có chữ ký, nên các AC vẫn ĐẠT trên trình duyệt. Hàm cùng đường dẫn trong privacy_router.py (link có chữ ký) không bao giờ chạy. Chỗ nào khác dùng thẳng media từ API chi tiết sẽ hỏng ảnh.",
+   "tai_hien": "Lấy media[0].url từ GET /api/memories/{id} rồi mở → 422.",
+   "vi_tri": "app/modules/memories/router.py:70; trùng đường dẫn với app/modules/memories/privacy_router.py:178; thứ tự đăng ký ở app/main.py:41 và :151",
+   "de_xuat": "Trong serialize_memory dùng sign_media_url(item.id) cho ảnh và video_url(...) cho video; xóa hàm GET /api/memories/{id} thừa ở privacy_router.py để chỉ còn một nơi xử lý.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "serialize_memory (memories/router.py) trả link có chữ ký (sign_media_url, video_url); bỏ serializer và GET /api/memories/{id} trùng lặp không bao giờ chạy trong privacy_router.py."
+  },
+  {
+   "ma": "L07",
+   "muc_do": "Trung bình",
+   "loai": "Lỗi",
+   "ac": [
+    "US-ADM-001 AC4"
+   ],
+   "tieu_de": "Người dùng thường mở trang quản trị không thấy 'Bạn không có quyền truy cập'",
+   "mo_ta": "Trang /admin/ âm thầm chuyển người dùng thường về /ban-do, không báo gì. API quản trị trả 403 với thông báo 'Chỉ quản trị viên mới được thực hiện thao tác này' thay vì 'Bạn không có quyền truy cập' như AC. Quyền vẫn được chặn đúng (không có thay đổi nào xảy ra).",
+   "tai_hien": "Đăng nhập tài khoản thường → mở /admin/ → bị chuyển về bản đồ, không có thông báo.",
+   "vi_tri": "app/modules/admin/router.py:64; app/modules/admin/js/admin.js:4-5",
+   "de_xuat": "Đổi thông báo ở get_current_admin thành 'Bạn không có quyền truy cập'; admin.js hiện thông báo đó (toast hoặc trang báo lỗi) trước khi chuyển hướng.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "API trả 'Bạn không có quyền truy cập'; admin.js chuyển về /ban-do?notice=forbidden và hiện đúng thông báo đó."
+  },
+  {
+   "ma": "L08",
+   "muc_do": "Thấp",
+   "loai": "Lỗi",
+   "ac": [
+    "US-ADM-002 AC3"
+   ],
+   "tieu_de": "Thông báo khi admin thao tác trên ký ức đã bị chủ xóa không đúng AC",
+   "mo_ta": "AC yêu cầu 'Ký ức không tồn tại'; API trả 404 'Không tìm thấy ký ức công khai'. Hành vi chặn đúng, chỉ sai câu chữ.",
+   "tai_hien": "Chủ xóa ký ức → admin POST /api/admin/memories/{id}/delete → 404 'Không tìm thấy ký ức công khai'.",
+   "vi_tri": "app/modules/admin/router.py:142",
+   "de_xuat": "Trả 'Ký ức không tồn tại' khi ký ức không có hoặc đã xóa mềm.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "API trả 'Ký ức không tồn tại'."
+  },
+  {
+   "ma": "L09",
+   "muc_do": "Trung bình",
+   "loai": "Lỗi (cần xác nhận trên máy thật)",
+   "ac": [
+    "US-MEM-002 AC3"
+   ],
+   "tieu_de": "Điện thoại: khách chạm giữ bản đồ, hộp 'Cần đăng nhập' đóng ngay khi nhấc tay",
+   "mo_ta": "Hộp thoại mở ra ngay dưới ngón tay khi còn đang giữ (sau 600 ms). Lúc nhấc tay, trình duyệt sinh một cú click rơi trúng nút trong hộp thoại nên hộp thoại tự đóng. Tái hiện ổn định trên Edge giả lập Pixel 7 (ghi được chuỗi sự kiện: touchstart → mở hộp thoại → touchend → click trên button → đóng). Người đã đăng nhập không bị vì form mở ở ngăn kéo bên dưới. Máy tính (nhấp đúp) không bị.",
+   "tai_hien": "Điện thoại, chưa đăng nhập, mở /ban-do, chạm giữ giữa bản đồ ~1 giây rồi nhấc tay.",
+   "vi_tri": "app/shared/js/map.js:68-73 (hẹn giờ chạm giữ, không chặn click sau đó)",
+   "de_xuat": "Khi chạm giữ đã kích hoạt, gắn touchend không passive và gọi preventDefault() để chặn click sinh ra; hoặc mở hộp thoại sau khi nhấc tay. Kiểm lại trên 1 máy Android và 1 iPhone thật.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "map.js: sau khi chạm giữ đã kích hoạt, touchend gọi preventDefault() để chặn cú click sinh ra. Kiểm lại trên giả lập Pixel 7: ĐẠT. Vẫn nên thử 1 lần trên điện thoại thật."
+  },
+  {
+   "ma": "L10",
+   "muc_do": "Thấp",
+   "loai": "Lỗi tiềm ẩn (hiệu năng)",
+   "ac": [
+    "US-MEM-004 AC1"
+   ],
+   "tieu_de": "Video tải hết về bộ nhớ rồi mới phát",
+   "mo_ta": "Trang chi tiết tải toàn bộ video bằng fetch rồi tạo blob URL thay vì phát trực tiếp từ link /stream (hỗ trợ Range). Video 50 MB trên điện thoại phải chờ tải hết và chiếm nhiều bộ nhớ.",
+   "tai_hien": "Mở chi tiết ký ức có video → thẻ video có nguồn 'blob:...', mạng tải /api/media/{id}/stream một lần trọn tệp.",
+   "vi_tri": "app/modules/memories/js/memories.js:39 (loadMemoryVideo), :71",
+   "de_xuat": "Gán thẳng link /stream có chữ ký vào <video src> khi ký ức công khai; chỉ dùng blob khi bắt buộc gửi header đăng nhập.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Nguyên nhân gốc: API chi tiết không trả trường status nên memories.js luôn coi ký ức là cần đăng nhập và tải blob. Đã thêm status vào serialize_memory: ký ức công khai phát thẳng từ link /stream, chỉ ký ức riêng tư mới tải qua blob (bắt buộc vì cần header đăng nhập)."
+  },
+  {
+   "ma": "L11",
+   "muc_do": "Thấp",
+   "loai": "Rủi ro (đúng thiết kế BR-20)",
+   "ac": [
+    "US-ACC-008 AC1"
+   ],
+   "tieu_de": "Token cũ vẫn dùng được sau khi đăng xuất",
+   "mo_ta": "Đăng xuất chỉ xóa JWT ở trình duyệt (đúng ghi chú BR-20). Nếu token bị lộ trước khi đăng xuất thì vẫn gọi được API tới khi hết hạn (mặc định 1440 phút = 24 giờ). Giao diện đạt cả 3 AC đăng xuất.",
+   "tai_hien": "Đăng nhập, lưu token, đăng xuất, gọi /api/auth/me bằng token cũ → 200.",
+   "vi_tri": "app/modules/accounts/logout_router.py; ACCESS_TOKEN_MINUTES trong .env.example:12",
+   "de_xuat": "Nhóm cân nhắc rút ngắn thời hạn token, hoặc tăng token_version khi đăng xuất (sẽ đăng xuất mọi thiết bị).",
+   "trang_thai": "Ghi nhận"
+  },
+  {
+   "ma": "L12",
+   "muc_do": "—",
+   "loai": "Môi trường",
+   "ac": [
+    "US-ACC-003 AC1",
+    "US-ACC-003 AC2",
+    "US-ACC-003 AC4",
+    "US-ACC-004 AC1",
+    "US-ACC-004 AC2"
+   ],
+   "tieu_de": "Chưa kiểm được Google/Facebook thật vì máy kiểm thử chưa có khóa OAuth",
+   "mo_ta": "GOOGLE_* và FACEBOOK_* trong .env đang trống nên /api/auth/providers báo false. Luồng hủy (AC3 của cả hai) đã kiểm thật và ĐẠT. Phần tạo/liên kết tài khoản và chặn tài khoản khóa đã kiểm bằng nhà cung cấp giả lập (test_us_acc_003_google.py, test_us_acc_004_facebook.py), đều ĐẠT.",
+   "tai_hien": "—",
+   "vi_tri": ".env: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FACEBOOK_APP_ID, FACEBOOK_APP_SECRET",
+   "de_xuat": "Điền khóa thật (hướng dẫn trong .env.example), đăng nhập thử 1 lần bằng tài khoản Google và Facebook thử.",
+   "trang_thai": "Chờ môi trường"
+  },
+  {
+   "ma": "L13",
+   "muc_do": "Cao",
+   "loai": "Lỗi tiềm ẩn (quyền riêng tư)",
+   "ac": [
+    "US-MEM-003 AC1",
+    "US-ACC-006 AC4"
+   ],
+   "tieu_de": "Ảnh tải lên giữ nguyên EXIF/GPS dù giao diện ghi là đã xóa",
+   "mo_ta": "profile.html ghi 'Thông tin vị trí (EXIF/GPS) trong ảnh được xóa trước khi lưu' nhưng không có code nào xóa. Ảnh chụp điện thoại chứa tọa độ GPS; ký ức công khai hoặc ảnh đại diện để lộ vị trí chính xác (có thể là nhà riêng) cho bất kỳ ai tải ảnh.",
+   "tai_hien": "Tải ảnh JPEG có EXIF GPS lên ký ức công khai, mở link ảnh → khối EXIF còn nguyên.",
+   "vi_tri": "app/modules/memories/services/image_media_service.py (stage_images)",
+   "de_xuat": "Lọc siêu dữ liệu trước khi lưu.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm services/image_metadata.py (Python thuần, không nén lại ảnh): bỏ APP1 EXIF/XMP của JPEG, eXIf/tEXt của PNG, EXIF/XMP của WebP. Áp dụng cho ảnh ký ức và ảnh đại diện. Đã kiểm trên Edge: ảnh sau khi lọc vẫn hiển thị đúng."
+  },
+  {
+   "ma": "L14",
+   "muc_do": "Trung bình",
+   "loai": "Lỗi tiềm ẩn (dữ liệu)",
+   "ac": [
+    "US-MEM-006 AC1"
+   ],
+   "tieu_de": "Thời điểm cập nhật lệch 7 giờ, sớm hơn cả thời điểm tạo",
+   "mo_ta": "created_at do MySQL tự ghi theo giờ máy chủ (giờ Việt Nam), còn khi đổi chế độ công khai, sửa hashtag, sửa chuyến đi thì code tự gán updated_at bằng giờ UTC. Trên MySQL thật: 16 ký ức bị đổi chế độ/hashtag có updated_at sớm hơn created_at 7 giờ. Xóa mềm (deleted_at) và mốc 'ký ức mới 7 ngày' của trang quản trị cũng lệch tương tự. Test SQLite không phát hiện được vì SQLite dùng UTC ở mọi chỗ.",
+   "tai_hien": "Tạo ký ức rồi đổi sang công khai → SELECT created_at, updated_at: updated_at nhỏ hơn 7 giờ.",
+   "vi_tri": "hashtags_router.py, privacy_router.py, trips_router.py, memories/router.py (deleted_at), admin/router.py",
+   "de_xuat": "Dùng đồng hồ của database cho mọi mốc thời gian của bản ghi.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Đổi các phép gán updated_at/deleted_at sang func.now(); mốc 7 ngày của thống kê quản trị lấy theo giờ database. Thêm phép kiểm tự động vào kiem_thu_api.py (sau khi sửa: 0 ký ức sai giờ)."
+  },
+  {
+   "ma": "L15",
+   "muc_do": "Trung bình",
+   "loai": "Lỗi tiềm ẩn",
+   "ac": [
+    "US-ACC-006 AC1",
+    "US-EXP-001 AC3"
+   ],
+   "tieu_de": "Ảnh đại diện luôn trống và API công khai trả đường dẫn lưu trữ nội bộ",
+   "mo_ta": "UserResponse đọc thuộc tính avatar_url không tồn tại trên model User (chỉ có avatar_path) nên /api/auth/me luôn trả avatar_url = null. Ngược lại, API khám phá và chi tiết ký ức trả thẳng avatar_path (đường dẫn lưu trữ trên máy chủ) làm avatar_url: ảnh không hiển thị được và lộ cấu trúc thư mục.",
+   "tai_hien": "Đặt users.avatar_path rồi gọi /api/auth/me và /api/explore/memories.",
+   "vi_tri": "accounts/service.py (to_user_response), explore/router.py, memories/router.py",
+   "de_xuat": "Một hàm tạo link công khai dùng chung.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm accounts/avatar.py: avatar_url(user) → /api/users/{id}/avatar?v=...; dùng ở mọi nơi trả thông tin người dùng/tác giả."
+  },
+  {
+   "ma": "L16",
+   "muc_do": "Thấp",
+   "loai": "Lỗi tiềm ẩn",
+   "ac": [
+    "US-MEM-001 AC1"
+   ],
+   "tieu_de": "Đổi tọa độ thành tên địa điểm chưa giới hạn 1 yêu cầu/giây (BR-19)",
+   "mo_ta": "Ghi chú của US-MEM-001 chốt giới hạn 1 yêu cầu/giây toàn hệ thống tới Nominatim. reverse_geocode_service chỉ có cache, không giới hạn nhịp; nhiều người cùng nhấp bản đồ có thể khiến Nominatim chặn máy chủ.",
+   "tai_hien": "Gọi /api/geocode/reverse liên tục với nhiều tọa độ khác nhau.",
+   "vi_tri": "app/modules/memories/services/reverse_geocode_service.py",
+   "de_xuat": "Cổng giới hạn nhịp dùng chung.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Thêm services/nominatim_gate.py (chờ tới lượt thay vì báo lỗi, tối đa 5 giây); dùng cho cả tìm theo tên và đổi tọa độ."
+  },
+  {
+   "ma": "L17",
+   "muc_do": "Thấp",
+   "loai": "Lỗi",
+   "ac": [
+    "US-ACC-004 AC1"
+   ],
+   "tieu_de": "Nút Facebook báo đã bật khi chỉ có App ID, chưa có Secret",
+   "mo_ta": "/api/auth/providers chỉ kiểm FACEBOOK_APP_ID; thiếu Secret thì bấm nút sẽ quay về trang đăng nhập với 'chưa hoàn tất'.",
+   "tai_hien": "Chỉ điền FACEBOOK_APP_ID → nút Facebook sáng nhưng không đăng nhập được.",
+   "vi_tri": "app/modules/accounts/facebook_router.py (get_auth_providers)",
+   "de_xuat": "Kiểm đủ cả ID và Secret.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "providers kiểm đủ ID + Secret cho cả Google và Facebook; cập nhật test tương ứng."
+  },
+  {
+   "ma": "L18",
+   "muc_do": "Thấp",
+   "loai": "Lỗi",
+   "ac": [
+    "US-ACC-006 AC5"
+   ],
+   "tieu_de": "Trang hồ sơ cho chọn ảnh .heic nhưng trình duyệt không hiển thị được",
+   "mo_ta": "Ô chọn ảnh đại diện nhận .heic, nhưng đa số trình duyệt (Chrome, Edge, Firefox) không hiển thị HEIC và ảnh ký ức cũng không nhận HEIC.",
+   "tai_hien": "Chọn ảnh .heic làm ảnh đại diện.",
+   "vi_tri": "accounts/ui/profile.html, accounts/js/profile.js",
+   "de_xuat": "Thống nhất định dạng với ảnh ký ức.",
+   "trang_thai": "Đã sửa",
+   "cach_sua": "Ảnh đại diện nhận .jpg, .png, .webp, .gif giống ảnh ký ức; cập nhật câu hướng dẫn trên trang."
+  }
+ ]
+}

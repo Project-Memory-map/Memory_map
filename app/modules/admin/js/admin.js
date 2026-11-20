@@ -2,7 +2,7 @@
 (async () => {
   const user = await AccountMenu.ready;
   if (!user || user.role !== "admin") {
-    window.location.replace(user ? "/ban-do" : "/accounts/login.html?next=/admin/");
+    window.location.replace(user ? "/ban-do?notice=forbidden" : "/accounts/login.html?next=/admin/"); // US-ADM-001 AC4: báo rõ, không chuyển im lặng
     return;
   }
 

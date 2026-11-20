@@ -20,7 +20,7 @@ Router kiểm tra lại các quy tắc này để trả lỗi rõ ràng trước
 from __future__ import annotations
 
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field, field_validator
@@ -53,15 +53,11 @@ ACTION_LABELS = {
 }
 
 
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
-
-
 # ----- Quyền quản trị
 
 def get_current_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
-        raise ForbiddenException("Chỉ quản trị viên mới được thực hiện thao tác này")
+        raise ForbiddenException("Bạn không có quyền truy cập")  # US-ADM-001 AC4
     return user
 
 
@@ -139,7 +135,7 @@ def _load_public_memory(db: Session, memory_id: int) -> Memory:
         .execution_options(populate_existing=True)
     )
     if memory is None or memory.deleted_at is not None or memory.visibility != "public":
-        raise NotFoundException("Không tìm thấy ký ức công khai")
+        raise NotFoundException("Ký ức không tồn tại")  # US-ADM-002 AC3
     return memory
 
 
@@ -171,7 +167,7 @@ def admin_stats(
     db: Session = Depends(get_db),
 ):
     alive = Memory.deleted_at.is_(None)
-    week_ago = _now() - timedelta(days=7)
+    week_ago = db.scalar(select(func.now())) - timedelta(days=7)  # so với created_at theo giờ database
     data = {
         "users": db.scalar(select(func.count(User.id))) or 0,
         "locked_users": db.scalar(select(func.count(User.id)).where(User.status == "locked")) or 0,
@@ -302,7 +298,7 @@ def admin_delete_memory(
     """
     try:
         memory = _load_public_memory(db, memory_id)
-        memory.deleted_at = _now()
+        memory.deleted_at = func.now()  # cùng đồng hồ với created_at của database
         _log(db, admin, "delete_memory", "memory", memory.id, payload.reason)
         db.commit()
     except Exception:
