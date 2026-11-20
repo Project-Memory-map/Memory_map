@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.errors import ValidationException
 from app.core.response import build_response
+from app.modules.accounts.avatar import avatar_url
 from app.modules.accounts.models import User
 from app.modules.explore.models import Region
 from app.modules.memories.models import Hashtag, Memory, MemoryHashtag
@@ -152,7 +153,7 @@ def serialize(m: Memory) -> dict:
         "author": {
             "id": m.author.id,
             "display_name": m.author.display_name,
-            "avatar_url": m.author.avatar_path,
+            "avatar_url": avatar_url(m.author),
         },
         "hashtags": sorted(
             link.hashtag.name for link in m.hashtag_links

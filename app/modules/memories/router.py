@@ -2,7 +2,7 @@
 
 import math
 import re
-from datetime import date, datetime, timezone
+from datetime import date
 
 from fastapi import APIRouter, Depends, Form, Query, Request
 from sqlalchemy import delete, extract, func, or_, select
@@ -11,9 +11,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.errors import ForbiddenException, NotFoundException, ValidationException
 from app.core.response import build_response
+from app.core.security import sign_media_url
+from app.modules.accounts.avatar import avatar_url
 from app.modules.accounts.deps import get_current_user, get_current_user_optional
 from app.modules.accounts.models import User
+from app.modules.explore.region_lookup import region_id_for
 from app.modules.memories.models import Hashtag, Memory, MemoryHashtag, Trip, TripMemory
+from app.modules.memories.services.video_media_service import video_url
 
 router = APIRouter(tags=["M2 - Ký ức"])
 
@@ -48,6 +52,7 @@ def serialize_memory(db: Session, memory: Memory, viewer: User | None) -> dict:
         "latitude": memory.latitude,
         "longitude": memory.longitude,
         "visibility": memory.visibility,
+        "status": memory.status,  # memories.js dùng để chọn phát video/ảnh trực tiếp hay qua blob có đăng nhập
         "hidden_by_admin": memory.status == "hidden",
         "is_owner": is_owner,
         "region": (
@@ -57,21 +62,19 @@ def serialize_memory(db: Session, memory: Memory, viewer: User | None) -> dict:
         "author": {
             "id": memory.author.id,
             "display_name": memory.author.display_name,
-            "avatar_url": memory.author.avatar_path,
+            "avatar_url": avatar_url(memory.author),
         },
         "hashtags": [link.hashtag.name for link in links],
         "hashtag_sources": {
             link.hashtag.name: link.source for link in links
         },
+        # Link có chữ ký: /api/media/{id} từ chối link thiếu exp/sig (trước đây trả '/api/media/12' → 422)
         "media": [
             {
                 "id": item.id,
                 "type": item.media_type,
-                "url": f"/api/media/{item.id}",
-                "thumb_url": (
-                    f"/api/media/{item.id}?thumb=1"
-                    if item.thumb_path else None
-                ),
+                "url": video_url(item.id, item.file_path) if item.media_type == "video" else sign_media_url(item.id),
+                "thumb_url": None if item.media_type == "video" else sign_media_url(item.id),
             }
             for item in memory.media
         ],
@@ -300,6 +303,7 @@ def update_memory(
         if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
             raise ValidationException("Tọa độ không hợp lệ")
         memory.latitude, memory.longitude = latitude, longitude
+        memory.region_id = region_id_for(db, latitude, longitude)  # US-MEM-006 AC2: khu vực theo vị trí mới
 
     if memory_date is not None:
         if memory_date > date.today():
@@ -336,7 +340,7 @@ def delete_memory(
         raise ForbiddenException("Bạn không có quyền xóa ký ức này")
 
     try:
-        memory.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        memory.deleted_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
         db.execute(
             delete(TripMemory).where(TripMemory.memory_id == memory.id)
         )

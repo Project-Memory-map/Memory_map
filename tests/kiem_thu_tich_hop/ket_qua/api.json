@@ -1,0 +1,448 @@
+{
+ "US-ACC-001 AC1": {
+  "status": "ĐẠT",
+  "detail": "201, message='Đăng ký thành công', role=user, có token đăng nhập ngay"
+ },
+ "US-ACC-001 AC2": {
+  "status": "ĐẠT",
+  "detail": "Mật khẩu 8 ký tự 'Abcdef12' → 201 'Đăng ký thành công'"
+ },
+ "US-ACC-001 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Mật khẩu phải có ít nhất 8 ký tự gồm chữ và số', số tài khoản tạo ra=0"
+ },
+ "US-ACC-001 AC4": {
+  "status": "ĐẠT",
+  "detail": "409 'Email này đã được đăng ký', số tài khoản cùng email=1"
+ },
+ "US-ACC-001 AC5": {
+  "status": "ĐẠT",
+  "detail": "422 'Email không hợp lệ'"
+ },
+ "US-ACC-002 AC1": {
+  "status": "ĐẠT",
+  "detail": "200 'Đăng nhập thành công', /me display_name='An'"
+ },
+ "US-ACC-002 AC2": {
+  "status": "ĐẠT",
+  "detail": "Email viết hoa → 200 'Đăng nhập thành công'"
+ },
+ "US-ACC-002 AC3": {
+  "status": "ĐẠT",
+  "detail": "sai mật khẩu: 401 'Email hoặc mật khẩu không đúng'; email không tồn tại: 'Email hoặc mật khẩu không đúng' (giống nhau=True)"
+ },
+ "US-ACC-002 AC4": {
+  "status": "ĐẠT",
+  "detail": "403 'Tài khoản của bạn đã bị khóa'"
+ },
+ "US-ACC-002 AC5": {
+  "status": "ĐẠT",
+  "detail": "5 lần sai: [401, 401, 401, 401, 429]; lần 6 đúng mật khẩu → 429 'Bạn đã nhập sai quá nhiều lần, vui lòng thử lại sau 15 phút'"
+ },
+ "US-ACC-003 AC1": {
+  "status": "CẦN CẤU HÌNH",
+  "detail": "Đã có API (/api/auth/google/login, /callback). Cần GOOGLE_CLIENT_ID/SECRET thật trong .env để đi hết luồng với Google; providers={'google': False, 'facebook': False}, /login → 302. Phần 'tạo tài khoản mới' đã kiểm bằng Google giả lập: tests/accounts/test_us_acc_003_google.py ĐẠT."
+ },
+ "US-ACC-003 AC2": {
+  "status": "CẦN CẤU HÌNH",
+  "detail": "Đã có API (/api/auth/google/login, /callback). Cần GOOGLE_CLIENT_ID/SECRET thật trong .env để đi hết luồng với Google; providers={'google': False, 'facebook': False}, /login → 302. Phần 'liên kết vào tài khoản cùng email' đã kiểm bằng Google giả lập: tests/accounts/test_us_acc_003_google.py ĐẠT."
+ },
+ "US-ACC-003 AC4": {
+  "status": "CẦN CẤU HÌNH",
+  "detail": "Đã có API (/api/auth/google/login, /callback). Cần GOOGLE_CLIENT_ID/SECRET thật trong .env để đi hết luồng với Google; providers={'google': False, 'facebook': False}, /login → 302. Phần 'chặn tài khoản bị khóa' đã kiểm bằng Google giả lập: tests/accounts/test_us_acc_003_google.py ĐẠT."
+ },
+ "US-ACC-003 AC3": {
+  "status": "ĐẠT",
+  "detail": "callback error=access_denied → 302, chuyển tới '/accounts/login.html?error=Đăng nhập Google chưa hoàn tất'"
+ },
+ "US-ACC-004 AC1": {
+  "status": "CẦN CẤU HÌNH",
+  "detail": "Cần FACEBOOK_APP_ID/SECRET thật trong .env để đi hết luồng OAuth (providers={'google': False, 'facebook': False}). Đã kiểm bằng Facebook giả lập: tests/accounts/test_us_acc_004_facebook.py ĐẠT."
+ },
+ "US-ACC-004 AC2": {
+  "status": "CẦN CẤU HÌNH",
+  "detail": "Cần FACEBOOK_APP_ID/SECRET thật trong .env để đi hết luồng OAuth (providers={'google': False, 'facebook': False}). Đã kiểm bằng Facebook giả lập: tests/accounts/test_us_acc_004_facebook.py ĐẠT."
+ },
+ "US-ACC-004 AC3": {
+  "status": "ĐẠT",
+  "detail": "callback error=access_denied → 302, chuyển tới '/accounts/login.html?error=Đăng nhập Facebook chưa hoàn tất'"
+ },
+ "US-ACC-005 AC1": {
+  "status": "ĐẠT",
+  "detail": "200 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu'; tạo link hiệu lực 30 phút (máy chưa cấu hình SMTP nên chế độ dev hiện link trên trang thay vì gửi mail; có SMTP thì gửi email – xem test_us_acc_005)"
+ },
+ "US-ACC-005 AC2": {
+  "status": "ĐẠT",
+  "detail": "200 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu' (giống hệt AC1); không tạo link/email nào=True"
+ },
+ "US-ACC-005 AC3": {
+  "status": "ĐẠT",
+  "detail": "đặt lại → 200 'Đặt lại mật khẩu thành công, bạn có thể đăng nhập bằng mật khẩu mới'; mk mới=200, mk cũ=401; dùng lại link → 400 'Liên kết không hợp lệ hoặc đã được sử dụng'"
+ },
+ "US-ACC-005 AC4": {
+  "status": "ĐẠT",
+  "detail": "mở link gửi 31 phút trước → 'Liên kết đã hết hạn, vui lòng yêu cầu lại'; cố đặt lại → 'Liên kết đã hết hạn, vui lòng yêu cầu lại'; mật khẩu không đổi=True"
+ },
+ "US-ACC-006 AC1": {
+  "status": "ĐẠT",
+  "detail": "200 'Đã cập nhật hồ sơ'; ký ức công khai hiện tên 'Dread'"
+ },
+ "US-ACC-006 AC2": {
+  "status": "ĐẠT",
+  "detail": "tên 100 ký tự → 200 'Đã cập nhật hồ sơ'"
+ },
+ "US-ACC-006 AC3": {
+  "status": "ĐẠT",
+  "detail": "tên 101 ký tự → 422 'Tên hiển thị tối đa 100 ký tự', tên đang lưu vẫn 100 ký tự"
+ },
+ "US-ACC-006 AC4": {
+  "status": "ĐẠT",
+  "detail": "ảnh 6 MB → 400 'Ảnh không được vượt quá 5 MB'"
+ },
+ "US-ACC-006 AC5": {
+  "status": "ĐẠT",
+  "detail": "baocao.pdf → 400 'Định dạng tệp không được hỗ trợ'; (đối chứng) ảnh .jpg hợp lệ → 200, mở /api/users/7/avatar?v=c48316abc5bf → 200"
+ },
+ "US-ACC-007 AC1": {
+  "status": "ĐẠT",
+  "detail": "200 'Đổi mật khẩu thành công'; đăng nhập mk mới=200, mk cũ=401"
+ },
+ "US-ACC-007 AC2": {
+  "status": "ĐẠT",
+  "detail": "400 'Mật khẩu hiện tại không đúng'; mk cũ vẫn đăng nhập=200"
+ },
+ "US-ACC-007 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Mật khẩu phải có ít nhất 8 ký tự gồm chữ và số'"
+ },
+ "US-ACC-007 AC4": {
+  "status": "ĐẠT",
+  "detail": "Tạo mật khẩu khi password_hash rỗng → 200 'Tạo mật khẩu thành công'; đăng nhập bằng mk mới=200"
+ },
+ "US-ACC-008 AC1": {
+  "status": "UI",
+  "detail": "Kiểm ở trình duyệt. API: logout → 200 'Đăng xuất thành công'; token cũ gọi /me → 200 (đúng thiết kế BR-20: đăng xuất xóa JWT ở trình duyệt, máy chủ không thu hồi)"
+ },
+ "US-ACC-008 AC2": {
+  "status": "UI",
+  "detail": "Kiểm ở trình duyệt (mở lại trang hồ sơ sau khi đăng xuất)"
+ },
+ "US-ACC-008 AC3": {
+  "status": "UI",
+  "detail": "Kiểm ở trình duyệt (nút Back)"
+ },
+ "US-MEM-001 AC1": {
+  "status": "ĐẠT",
+  "detail": "kết quả đầu 'Hồ Hoàn Kiếm' (21.0288, 105.8525); ghim đúng Hồ Gươm=True, chế độ=private, ngày=2025-10-12, khu vực=Hà Nội"
+ },
+ "US-MEM-001 AC2": {
+  "status": "ĐẠT",
+  "detail": "Gửi 20000 ký tự, DB lưu 19999 ký tự, chi tiết trả về 19999 ký tự"
+ },
+ "US-MEM-001 AC3": {
+  "status": "ĐẠT",
+  "detail": "200 'Không tìm thấy địa điểm. Hãy thử tên khác hoặc chọn trực tiếp trên bản đồ'; không có ghim nào được tạo=True"
+ },
+ "US-MEM-001 AC4": {
+  "status": "ĐẠT",
+  "detail": "422 'Vui lòng nhập tiêu đề'"
+ },
+ "US-MEM-001 AC5": {
+  "status": "ĐẠT",
+  "detail": "Ngày 2026-11-22 → 422 'Ngày không được ở tương lai'"
+ },
+ "US-MEM-002 AC1": {
+  "status": "ĐẠT",
+  "detail": "Ghim ở (11.9404, 108.4583), visibility=private"
+ },
+ "US-MEM-002 AC2": {
+  "status": "ĐẠT",
+  "detail": "Tạo được (id=5), region=None"
+ },
+ "US-MEM-002 AC3": {
+  "status": "ĐẠT",
+  "detail": "Khách gọi POST /api/memories → 401 'Bạn cần đăng nhập để tiếp tục' (giao diện kiểm riêng ở trình duyệt)"
+ },
+ "US-MEM-003 AC1": {
+  "status": "ĐẠT",
+  "detail": "upload → 200, DB có 3 ảnh theo thứ tự; chi tiết trả 3 URL dạng '/api/media/1?exp=1795207661&sig=fb0b2a0e222fbd55ebe7b120a31f6817c0503942cd885b0f87444b98efc6aa58', mở ảnh từ trang chi tiết → [200, 200, 200]"
+ },
+ "US-MEM-003 AC2": {
+  "status": "ĐẠT",
+  "detail": "10 ảnh × 5 MB → 200 'Đã cập nhật ảnh của ký ức'"
+ },
+ "US-MEM-003 AC3": {
+  "status": "ĐẠT",
+  "detail": "400 'Mỗi ký ức tối đa 10 ảnh', còn 10 ảnh"
+ },
+ "US-MEM-003 AC4": {
+  "status": "ĐẠT",
+  "detail": "400 'Mỗi ảnh không được vượt quá 5 MB'"
+ },
+ "US-MEM-003 AC5": {
+  "status": "ĐẠT",
+  "detail": "400 'Định dạng tệp không được hỗ trợ'"
+ },
+ "US-MEM-004 AC1": {
+  "status": "ĐẠT",
+  "detail": "upload → 200; URL do API video trả phát được=206; URL ở trang chi tiết '/api/media/14/stream?exp=1795207662&sig=4afd53bd5d4dd8cbf8aec62ebd31ce66fce6288448322ae50e447615840c9a00' → 200"
+ },
+ "US-MEM-004 AC2": {
+  "status": "ĐẠT",
+  "detail": "Đúng 50 MB → 200 'Đã cập nhật video của ký ức'"
+ },
+ "US-MEM-004 AC3": {
+  "status": "ĐẠT",
+  "detail": "400 'Video không được vượt quá 50 MB'"
+ },
+ "US-MEM-004 AC4": {
+  "status": "ĐẠT",
+  "detail": "400 'Mỗi ký ức chỉ có 1 video', còn 1 video"
+ },
+ "US-MEM-005 AC1": {
+  "status": "ĐẠT",
+  "detail": "tiêu đề/ngày/địa điểm/hashtag đúng, is_owner=True, 3 ảnh nhưng mở ảnh → [200, 200, 200]"
+ },
+ "US-MEM-005 AC2": {
+  "status": "ĐẠT",
+  "detail": "tác giả='Chủ Ký Ức', is_owner=False, khóa của author=['avatar_url', 'display_name', 'id']"
+ },
+ "US-MEM-005 AC3": {
+  "status": "ĐẠT",
+  "detail": "ký ức riêng tư người khác → 404 'Không tìm thấy ký ức'; id không tồn tại → 404 'Không tìm thấy ký ức'"
+ },
+ "US-MEM-005 AC4": {
+  "status": "ĐẠT",
+  "detail": "chủ → 200 hidden_by_admin=True; người khác → 404; khách → 404 (chữ 'Đã bị quản trị viên ẩn' kiểm ở trình duyệt)"
+ },
+ "US-MEM-006 AC1": {
+  "status": "ĐẠT",
+  "detail": "sửa tiêu đề → 200; thêm 1 bỏ 1 ảnh → 200; còn 3 ảnh; updated_at 2026-11-21 02:47:43 → 2026-11-21 02:47:45"
+ },
+ "US-MEM-006 AC2": {
+  "status": "ĐẠT",
+  "detail": "ghim chuyển tới (11.9404, 108.4583); khu vực sau khi đổi={'id': 19, 'name': 'Lâm Đồng'} (mong đợi Lâm Đồng)"
+ },
+ "US-MEM-006 AC3": {
+  "status": "ĐẠT",
+  "detail": "403 'Bạn không có quyền sửa ký ức này', tiêu đề vẫn 'Của chủ'"
+ },
+ "US-MEM-006 AC4": {
+  "status": "ĐẠT",
+  "detail": "422 'Vui lòng nhập tiêu đề'"
+ },
+ "US-MEM-007 AC1": {
+  "status": "ĐẠT",
+  "detail": "xóa → 200; còn trong danh sách=False, trên bản đồ=False; mở ảnh → 404"
+ },
+ "US-MEM-007 AC2": {
+  "status": "UI",
+  "detail": "Kiểm ở trình duyệt (nút Hủy ở hộp xác nhận)"
+ },
+ "US-MEM-007 AC3": {
+  "status": "ĐẠT",
+  "detail": "chuyến đi còn 2 ký ức"
+ },
+ "US-MEM-007 AC4": {
+  "status": "ĐẠT",
+  "detail": "403 'Bạn không có quyền xóa ký ức này', deleted_at=None"
+ },
+ "US-MEM-008 AC1": {
+  "status": "ĐẠT",
+  "detail": "đổi → 200; có trên bản đồ công khai=True; khách xem chi tiết → 200; khách mở ảnh → 200"
+ },
+ "US-MEM-008 AC2": {
+  "status": "ĐẠT",
+  "detail": "đổi → 200; còn trên bản đồ=False; người khác mở ảnh → 403 'Bạn không có quyền truy cập tệp này'"
+ },
+ "US-MEM-008 AC3": {
+  "status": "ĐẠT",
+  "detail": "403 'Bạn không có quyền sửa ký ức này', visibility=private"
+ },
+ "US-MEM-009 AC1": {
+  "status": "ĐẠT",
+  "detail": "thứ tự hiển thị ['2025-10-10', '2025-10-11', '2025-10-12']"
+ },
+ "US-MEM-009 AC2": {
+  "status": "ĐẠT",
+  "detail": "thứ tự ['Tạo trước', 'Tạo sau']"
+ },
+ "US-MEM-009 AC3": {
+  "status": "ĐẠT",
+  "detail": "403 'Chỉ thêm được ký ức của bạn'"
+ },
+ "US-MEM-009 AC4": {
+  "status": "ĐẠT",
+  "detail": "422 'Vui lòng nhập tên chuyến đi'"
+ },
+ "US-MEM-009 AC5": {
+  "status": "ĐẠT",
+  "detail": "đổi tên → 'Đà Lạt mùa thu'; bỏ ký ức → 200 (ký ức vẫn còn 200); xóa chuyến → 200; ký ức còn [200, 200, 200]"
+ },
+ "US-MEM-010 AC1": {
+  "status": "ĐẠT",
+  "detail": "200, chi tiết có ['dalat', 'phuot']"
+ },
+ "US-MEM-010 AC2": {
+  "status": "ĐẠT",
+  "detail": "200; số hashtag 'dalat' trong DB = 1"
+ },
+ "US-MEM-010 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Hashtag chỉ gồm chữ, số, dấu gạch dưới (tối đa 30 ký tự)'"
+ },
+ "US-MEM-010 AC4": {
+  "status": "ĐẠT",
+  "detail": "422 'Mỗi ký ức tối đa 10 hashtag', còn 10 hashtag"
+ },
+ "US-EXP-001 AC1": {
+  "status": "ĐẠT",
+  "detail": "khách thấy 20 ghim (mong 20), lẫn riêng tư=False"
+ },
+ "US-EXP-001 AC2": {
+  "status": "ĐẠT",
+  "detail": "danh sách vùng trống → 'Chưa có ký ức công khai trong khu vực này', ghim=[] (thông báo trên bản đồ kiểm ở trình duyệt)"
+ },
+ "US-EXP-001 AC3": {
+  "status": "ĐẠT",
+  "detail": "author danh sách=['avatar_url', 'display_name', 'id'], author chi tiết=['avatar_url', 'display_name', 'id']"
+ },
+ "US-EXP-001 AC4": {
+  "status": "ĐẠT",
+  "detail": "sau khi ẩn: còn 19 ghim, ký ức ẩn còn hiện=False"
+ },
+ "US-EXP-002 AC1": {
+  "status": "ĐẠT",
+  "detail": "danh sách 8 ký ức, bản đồ 8 ghim (mong 8)"
+ },
+ "US-EXP-002 AC2": {
+  "status": "ĐẠT",
+  "detail": "chọn 2 hashtag → 10 ký ức (mong 10 = 8 + 2, phép OR)"
+ },
+ "US-EXP-002 AC3": {
+  "status": "ĐẠT",
+  "detail": "'Chưa có ký ức nào với hashtag này'"
+ },
+ "US-EXP-002 AC4": {
+  "status": "ĐẠT",
+  "detail": "bỏ lọc → 20 ghim trong vùng (mong 20)"
+ },
+ "US-EXP-003 AC1": {
+  "status": "ĐẠT",
+  "detail": "6 ký ức tạo tại tọa độ Đà Lạt được gán khu vực={'id': 19, 'name': 'Lâm Đồng'}; lọc Lâm Đồng → 6 ký ức (mong 6)"
+ },
+ "US-EXP-003 AC2": {
+  "status": "ĐẠT",
+  "detail": "ký ức không có khu vực: có trong kết quả lọc=False, có khi không lọc=True"
+ },
+ "US-EXP-003 AC3": {
+  "status": "ĐẠT",
+  "detail": "(gán khu vực bằng SQL để kiểm riêng phép kết hợp) kết quả [90], mong [90]"
+ },
+ "US-EXP-003 AC4": {
+  "status": "ĐẠT",
+  "detail": "'Chưa có ký ức công khai trong khu vực này'"
+ },
+ "US-EXP-004 AC1": {
+  "status": "ĐẠT",
+  "detail": "tìm 'Hồ Gươm' → 5/5 ký ức thử; thứ tự ngày ['2025-09-09', '2025-05-05', '2024-12-12', '2024-01-01', '2023-03-03']"
+ },
+ "US-EXP-004 AC2": {
+  "status": "ĐẠT",
+  "detail": "'Hồ Gươm' 7 kết quả, 'hồ gươm' 7 kết quả, giống nhau=True"
+ },
+ "US-EXP-004 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Nhập ít nhất 2 ký tự'"
+ },
+ "US-EXP-004 AC4": {
+  "status": "ĐẠT",
+  "detail": "'Không tìm thấy kết quả cho xyzxyz'"
+ },
+ "US-EXP-005 AC1": {
+  "status": "ĐẠT",
+  "detail": "năm 2024 → ['2024-01-05', '2024-03-01', '2024-07-07', '2024-12-31'], chế độ ['private', 'public']"
+ },
+ "US-EXP-005 AC2": {
+  "status": "ĐẠT",
+  "detail": "→ ['2025-03-01', '2025-03-31']"
+ },
+ "US-EXP-005 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc'"
+ },
+ "US-EXP-005 AC4": {
+  "status": "ĐẠT",
+  "detail": "'Bạn chưa có ký ức nào trong khoảng thời gian này'"
+ },
+ "US-ADM-001 AC1": {
+  "status": "ĐẠT",
+  "detail": "200; còn trên bản đồ=False; chủ thấy hidden_by_admin=True; nhật ký=(17, datetime.datetime(2026, 11, 21, 2, 47, 50), 'Hình ảnh không phù hợp')"
+ },
+ "US-ADM-001 AC2": {
+  "status": "ĐẠT",
+  "detail": "200; xuất hiện lại=True"
+ },
+ "US-ADM-001 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Vui lòng nhập lý do', status=active"
+ },
+ "US-ADM-001 AC4": {
+  "status": "ĐẠT",
+  "detail": "API → 403 'Bạn không có quyền truy cập'; thử ẩn → 403; status=active (trang /admin/ kiểm ở trình duyệt)"
+ },
+ "US-ADM-001 AC5": {
+  "status": "ĐẠT",
+  "detail": "theo tiêu đề 1 kết quả, theo tác giả 3 kết quả, chỉ công khai=True, có trạng thái=True"
+ },
+ "US-ADM-002 AC1": {
+  "status": "ĐẠT",
+  "detail": "200; chi tiết → 404; ảnh → 404; nhật ký lý do=Vi phạm nghiêm trọng"
+ },
+ "US-ADM-002 AC2": {
+  "status": "ĐẠT",
+  "detail": "422 'Vui lòng nhập lý do'"
+ },
+ "US-ADM-002 AC3": {
+  "status": "ĐẠT",
+  "detail": "404 'Ký ức không tồn tại'"
+ },
+ "US-ADM-002 AC4": {
+  "status": "ĐẠT",
+  "detail": "403 'Bạn không có quyền truy cập', deleted_at=None"
+ },
+ "US-ADM-003 AC1": {
+  "status": "ĐẠT",
+  "detail": "200; đăng nhập → 403 'Tài khoản của bạn đã bị khóa'; nhật ký=Spam"
+ },
+ "US-ADM-003 AC2": {
+  "status": "ĐẠT",
+  "detail": "200; đăng nhập lại → 200"
+ },
+ "US-ADM-003 AC3": {
+  "status": "ĐẠT",
+  "detail": "422 'Bạn không thể khóa chính tài khoản của mình'"
+ },
+ "US-ADM-003 AC4": {
+  "status": "ĐẠT",
+  "detail": "403 'Bạn không có quyền truy cập', status=active"
+ },
+ "US-ADM-003 AC5": {
+  "status": "ĐẠT",
+  "detail": "theo email 1 kết quả, theo tên 1 kết quả, có trạng thái"
+ },
+ "_kiem_tra_them": {
+  "Thời điểm cập nhật không sớm hơn thời điểm tạo (L14)": {
+   "status": "ĐẠT",
+   "detail": "0 ký ức có updated_at < created_at sau khi đổi chế độ/hashtag/chuyến đi"
+  },
+  "Không lộ đường dẫn lưu trữ ảnh đại diện": {
+   "status": "ĐẠT",
+   "detail": "0 ký ức lộ avatar_path"
+  },
+  "Ký ức trong nước được gán tỉnh/thành (L05)": {
+   "status": "ĐẠT",
+   "detail": "57 ký ức có khu vực"
+  }
+ }
+}

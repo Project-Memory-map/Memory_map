@@ -1,11 +1,10 @@
 """US-MEM-009 – Tạo chuyến đi và thêm ký ức vào chuyến đi (FR-2.7)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, field_validator
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -256,7 +255,7 @@ def update_trip(
     trip.name = payload.name.strip()
     if "description" in payload.model_fields_set:
         trip.description = payload.description
-    trip.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    trip.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
 
     db.commit()
     db.refresh(trip)
@@ -306,7 +305,7 @@ def add_memories_to_trip(
         raise BadRequestException("Vui lòng chọn ký ức để thêm vào chuyến đi")
 
     _attach_memories_to_trip(db, trip, ids, current_user)
-    trip.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    trip.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
     db.commit()
     db.refresh(trip)
     return build_response(
@@ -336,7 +335,7 @@ def remove_memory_from_trip(
         raise NotFoundException("Ký ức không nằm trong chuyến đi này")
 
     db.delete(link)
-    trip.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    trip.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
     db.commit()
     db.refresh(trip)
     return build_response(

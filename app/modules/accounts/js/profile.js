@@ -172,14 +172,12 @@
       avatarInput.value = "";
       return;
     }
-    if (!/\.(jpe?g|png|heic)$/i.test(file.name)) {
+    if (!/\.(jpe?g|png|webp|gif)$/i.test(file.name)) {
       UI.showMessage(message, "Định dạng tệp không được hỗ trợ");
       avatarInput.value = "";
       return;
     }
-    if (!/\.heic$/i.test(file.name)) {
-      document.getElementById("avatar-preview").replaceChildren(UI.el("img", { className: "avatar avatar--xl", src: URL.createObjectURL(file), alt: "Xem trước" }));
-    }
+    document.getElementById("avatar-preview").replaceChildren(UI.el("img", { className: "avatar avatar--xl", src: URL.createObjectURL(file), alt: "Xem trước" }));
   });
 
   document.getElementById("avatar-remove").addEventListener("click", async () => {

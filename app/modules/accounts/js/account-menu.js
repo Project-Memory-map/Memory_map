@@ -118,6 +118,7 @@ const AccountMenu = (() => {
     registered: ["Đăng ký thành công", "success"],
     oauth: ["Đăng nhập thành công", "success"],
     need_email: ["Hãy bổ sung email trong hồ sơ để dùng chức năng quên mật khẩu", "info"],
+    forbidden: ["Bạn không có quyền truy cập", "error"],
   };
   ready.then(() => {
     const url = new URL(window.location.href);

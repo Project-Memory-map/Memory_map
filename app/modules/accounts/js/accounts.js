@@ -102,6 +102,19 @@
     else if (params.get("registered")) UI.showMessage(pageMessage, "Đăng ký thành công", "success");
   }
 
+  /* Trang đặt lại mật khẩu: kiểm tra liên kết ngay khi mở (US-ACC-005 AC4: báo hết hạn trước khi người dùng gõ) */
+  const tokenForm = document.querySelector("form[data-with-token]");
+  if (tokenForm) {
+    const tokenMessage = tokenForm.querySelector(".form-message");
+    const token = params.get("token");
+    const disable = (text) => {
+      UI.showMessage(tokenMessage, text);
+      tokenForm.querySelectorAll("input, button").forEach((field) => { field.disabled = true; });
+    };
+    if (!token) disable("Liên kết đã hết hạn, vui lòng yêu cầu lại");
+    else Api.post("/api/auth/validate-reset-token", { body: { token } }).catch((error) => disable(error.message));
+  }
+
   /* Đã đăng nhập mà vào trang đăng nhập/đăng ký thì về bản đồ */
   if (document.body.dataset.guestOnly !== undefined && Api.getToken()) {
     Api.get("/api/auth/me")

@@ -16,15 +16,25 @@ Thiết kế dựa trên `schema.sql` v0.3 và các quy tắc nghiệp vụ BR-x
 - **MySQL Server 8.0 trở lên** và **MySQL Workbench**.
 - Không dùng được MariaDB hay SQLite, vì schema cần trigger, `CHECK`, `FULLTEXT ... WITH PARSER ngram` và collation `utf8mb4_0900_*`, vốn là tính năng riêng của MySQL 8.
 
-## 2. Cách chạy trên MySQL Workbench
+## 2. Cách tạo database
 
-Mỗi thành viên tự chạy trên Workbench của mình:
+**Cách nhanh (khuyên dùng):** từ thư mục gốc dự án, đã điền `.env`:
+
+```bash
+python scripts/init_db.py          # tạo bảng, trigger, view, nạp 34 tỉnh/thành; chạy lại an toàn
+python scripts/init_db.py --xoa-cu # xóa database cũ rồi tạo lại từ đầu (MẤT DỮ LIỆU)
+python scripts/seed_demo.py        # (tùy chọn) dữ liệu mẫu để thử giao diện
+```
+
+Database đã có từ trước khi có tính năng gán tỉnh/thành theo tọa độ thì chạy thêm một lần `python scripts/gan_khu_vuc.py` để gán khu vực cho ký ức cũ.
+
+**Cách chạy tay trên MySQL Workbench:**
 
 1. Mở Workbench, kết nối vào MySQL Server (Local instance hoặc server của nhóm).
 2. **File → Open SQL Script…** rồi chọn `database/schema.sql`.
 3. Bấm ⚡ **Execute** (biểu tượng tia sét, *không* phải tia sét có chữ I).
 4. Bấm 🔄 Refresh ở khung **Schemas**, sẽ thấy database `ban_do_ky_uc`.
-5. Mở tiếp `database/seed_regions.sql` rồi bấm ⚡ để nạp 34 tỉnh/thành. Chỉ chạy 1 lần; chạy lần 2 sẽ báo trùng `slug`.
+5. Mở tiếp `database/seed_regions.sql` rồi bấm ⚡ để nạp 34 tỉnh/thành. Chỉ chạy 1 lần; chạy lần 2 sẽ báo trùng `slug` (`scripts/init_db.py` tự bỏ qua bước này khi đã có dữ liệu).
 
 Kiểm tra lại đã đủ chưa:
 
@@ -38,6 +48,7 @@ Nếu dùng dòng lệnh thay cho Workbench:
 
 ```bash
 mysql -u root -p --default-character-set=utf8mb4 < database/schema.sql
+mysql -u root -p --default-character-set=utf8mb4 ban_do_ky_uc < database/seed_regions.sql
 ```
 
 ## 3. Lưu ý quan trọng
@@ -49,8 +60,10 @@ mysql -u root -p --default-character-set=utf8mb4 < database/schema.sql
    ```
    rồi chạy lại `schema.sql`.
 3. **Khi có người sửa `schema.sql` và push lên**, các thành viên khác `git pull` về rồi chạy lại file để database trên máy mình giống nhau.
-4. **Không chạy file bằng Python `execute()` một lần.** Phần trigger dùng lệnh `DELIMITER`, mà lệnh này chỉ Workbench và mysql CLI hiểu.
+4. **Không chạy cả file bằng một lệnh `execute()` của Python.** Phần trigger dùng lệnh `DELIMITER`, mà lệnh này chỉ Workbench và mysql CLI hiểu. `scripts/init_db.py` đã tự tách câu lệnh theo `DELIMITER` nên dùng script đó.
 5. **Luôn dùng charset `utf8mb4`.** Thiếu nó thì hashtag tiếng Việt bị trigger từ chối và thông báo lỗi bị vỡ font.
+6. **Mốc thời gian theo đồng hồ MySQL.** `created_at` do MySQL tự ghi (giờ của máy chủ MySQL). Code gán `updated_at`, `deleted_at` bằng `func.now()` để cùng chuẩn; không gán bằng giờ UTC của Python (sẽ lệch 7 giờ).
+7. **Tỉnh/thành của ký ức (`memories.region_id`) do code tự gán** theo tọa độ khi tạo/sửa, dựa trên ranh giới `app/modules/explore/data/provinces.geojson`; ký ức ở nước ngoài để `NULL`.
 
 ## 4. Kết nối từ backend (FastAPI)
 

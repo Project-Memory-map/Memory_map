@@ -284,6 +284,11 @@ def test_get_auth_providers_tra_ve_trang_thai_cau_hinh(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(settings, "facebook_app_id", "fb-app-123")
+    monkeypatch.setattr(settings, "facebook_app_secret", "")
+    # Có App ID nhưng thiếu Secret thì bấm nút cũng không đăng nhập được → coi là chưa cấu hình
+    assert client.get("/api/auth/providers").json()["data"]["facebook"] is False
+
+    monkeypatch.setattr(settings, "facebook_app_secret", "fb-secret")
     res_enabled = client.get("/api/auth/providers")
     body_enabled = res_enabled.json()
 

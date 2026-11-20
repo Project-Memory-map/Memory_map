@@ -201,7 +201,7 @@ def get_auth_providers(request: Request):
         "OK",
         request,
         data={
-            "google": bool(getattr(settings, "google_client_id", "")),
-            "facebook": bool(settings.facebook_app_id),
+            "google": bool(settings.google_client_id and settings.google_client_secret),
+            "facebook": bool(settings.facebook_app_id and settings.facebook_app_secret),
         },
     )

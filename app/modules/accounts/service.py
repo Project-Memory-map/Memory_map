@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ConflictException
 from app.core.passwords import hash_password
 from app.core.security import create_access_token
+from app.modules.accounts.avatar import avatar_url
 from app.modules.accounts.models import User
 from app.modules.accounts.schemas import AuthResponse, RegisterRequest, UserResponse
 
@@ -24,7 +25,7 @@ def to_user_response(user: User) -> UserResponse:
     # profile.js đọc has_password + providers để chọn "Đổi mật khẩu" hay "Tạo mật khẩu" (US-ACC-007)
     providers = sorted({account.provider for account in user.oauth_accounts})
     return UserResponse.model_validate(user).model_copy(
-        update={"has_password": bool(user.password_hash), "providers": providers}
+        update={"has_password": bool(user.password_hash), "providers": providers, "avatar_url": avatar_url(user)}
     )
 
 

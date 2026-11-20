@@ -1,7 +1,6 @@
 """US-MEM-010 – Router gắn, sửa, xóa và gợi ý hashtag cho ký ức (FR-2.9, BR-06)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
@@ -133,7 +132,7 @@ def attach_hashtags_to_memory(
         payload.ai_hashtags,
         replace=payload.replace,
     )
-    memory.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    memory.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
     db.commit()
     db.refresh(memory)
     return build_response(
@@ -162,7 +161,7 @@ def replace_memory_hashtags(
         payload.ai_hashtags,
         replace=True,
     )
-    memory.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    memory.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
     db.commit()
     db.refresh(memory)
     return build_response(
@@ -202,7 +201,7 @@ def remove_hashtag_from_memory(
             MemoryHashtag.hashtag_id == hashtag.id,
         )
     )
-    memory.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    memory.updated_at = func.now()  # giờ của database, cùng chuẩn với created_at (trước đây UTC → lệch 7 giờ)
     db.commit()
     db.refresh(memory)
     return build_response(
