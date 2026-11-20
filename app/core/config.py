@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     geocode_user_agent: str = "BanDoKyUc/0.1 (do-an-sinh-vien)"
     geocode_timeout_seconds: float = 5.0
 
+    # Gemini AI (FR-3.6 / T05B590: gợi ý hashtag tự động)
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_timeout_seconds: float = 8.0
+
     cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
     @property
