@@ -1,17 +1,24 @@
-"""US-MEM-010 – Dịch vụ chuẩn hóa, kiểm tra BR-06 và lưu hashtag cho ký ức."""
+"""US-MEM-010 & FR-3.6 (T05B590) – Chuẩn hóa, kiểm tra BR-06, lưu và gợi ý hashtag bằng Gemini AI."""
 from __future__ import annotations
 
+import json
+import logging
 import re
 import unicodedata
 
+import httpx
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.errors import ValidationException
 from app.modules.memories.models import Hashtag, Memory, MemoryHashtag
 
+logger = logging.getLogger(__name__)
+
 MAX_HASHTAGS_PER_MEMORY = 10
 MAX_HASHTAG_LENGTH = 30
+MAX_SUGGESTED_HASHTAGS = 6
 
 MSG_INVALID_HASHTAG = "Hashtag chỉ gồm chữ, số, dấu gạch dưới (tối đa 30 ký tự)"
 MSG_TOO_MANY_HASHTAGS = "Mỗi ký ức tối đa 10 hashtag"
@@ -153,11 +160,93 @@ def sync_memory_hashtags(
     return sorted(target_names)
 
 
-def suggest_hashtags_from_text(
+def _clean_ai_candidate_tags(raw_items: list[str]) -> list[str]:
+    cleaned_tags: list[str] = []
+    for item in raw_items:
+        if not isinstance(item, str):
+            continue
+        token = unicodedata.normalize("NFC", item.strip().lstrip("#")).lower()
+        token = re.sub(r"\s+", "", token)
+        token = "".join(ch for ch in token if ch.isalpha() or ch.isdigit() or ch == "_")
+        if 2 <= len(token) <= MAX_HASHTAG_LENGTH and _is_valid_tag_chars(token):
+            if token not in cleaned_tags:
+                cleaned_tags.append(token)
+        if len(cleaned_tags) >= MAX_SUGGESTED_HASHTAGS:
+            break
+    return cleaned_tags
+
+
+def _suggest_with_gemini(
+    title: str | None,
+    content: str | None,
+    place_name: str | None,
+) -> list[str]:
+    api_key = (settings.gemini_api_key or "").strip()
+    if not api_key:
+        return []
+
+    context_parts = []
+    if title and title.strip():
+        context_parts.append(f"Tiêu đề: {title.strip()}")
+    if place_name and place_name.strip():
+        context_parts.append(f"Địa điểm: {place_name.strip()}")
+    if content and content.strip():
+        context_parts.append(f"Nội dung: {content.strip()}")
+    if not context_parts:
+        return []
+
+    prompt = (
+        "Bạn là trợ lý gợi ý hashtag cho ứng dụng nhật ký du lịch và kỷ niệm 'Bản đồ Ký ức'.\n"
+        "Dựa vào thông tin ký ức dưới đây, hãy gợi ý từ 4 đến 6 hashtag tiếng Việt (viết liền, "
+        "không dấu # ở đầu, chữ thường, chỉ gồm chữ cái tiếng Việt/số/dấu gạch dưới, tối đa 30 ký tự mỗi tag).\n"
+        "Chỉ trả về một mảng JSON gồm các chuỗi string, ví dụ: [\"dalat\", \"sanmay\", \"kyniem\"].\n"
+        "Không giải thích thêm.\n\n"
+        + "\n".join(context_parts)
+    )
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{settings.gemini_model}:generateContent"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.4,
+            "responseMimeType": "application/json",
+        },
+    }
+
+    with httpx.Client(timeout=settings.gemini_timeout_seconds) as client:
+        response = client.post(url, params={"key": api_key}, json=payload)
+        response.raise_for_status()
+        body = response.json()
+
+    candidates = body.get("candidates") or []
+    if not candidates:
+        return []
+    parts = (candidates[0].get("content") or {}).get("parts") or []
+    raw_text = "".join(part.get("text", "") for part in parts).strip()
+    if not raw_text:
+        return []
+
+    raw_text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text, flags=re.IGNORECASE).strip()
+    try:
+        parsed = json.loads(raw_text)
+        if isinstance(parsed, dict):
+            parsed = parsed.get("hashtags", [])
+        if isinstance(parsed, list):
+            return _clean_ai_candidate_tags([str(x) for x in parsed])
+    except json.JSONDecodeError:
+        tokens = [t for t in re.split(r"[\s,;\"'\[\]]+", raw_text) if t]
+        return _clean_ai_candidate_tags(tokens)
+    return []
+
+
+def _suggest_locally(
     title: str | None = None,
     content: str | None = None,
     place_name: str | None = None,
-) -> dict[str, object]:
+) -> list[str]:
     candidates: list[str] = []
     for raw_piece in (place_name or "", title or "", content or ""):
         for piece in re.split(r"[,.;:!?/\\|\-–—()\[\]\n\r]+", raw_piece):
@@ -183,4 +272,22 @@ def suggest_hashtags_from_text(
 
     if not candidates:
         candidates = ["kyuc", "hanhtrinh", "kyniem"]
-    return {"hashtags": candidates[:6], "engine": "local"}
+    return candidates[:MAX_SUGGESTED_HASHTAGS]
+
+
+def suggest_hashtags_from_text(
+    title: str | None = None,
+    content: str | None = None,
+    place_name: str | None = None,
+) -> dict[str, object]:
+    try:
+        gemini_tags = _suggest_with_gemini(title=title, content=content, place_name=place_name)
+        if gemini_tags:
+            return {"hashtags": gemini_tags, "engine": "gemini"}
+    except Exception as exc:
+        logger.warning("Gemini hashtag suggestion fallback to local: %s", exc)
+
+    return {
+        "hashtags": _suggest_locally(title=title, content=content, place_name=place_name),
+        "engine": "local",
+    }
