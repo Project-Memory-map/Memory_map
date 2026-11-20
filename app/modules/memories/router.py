@@ -80,6 +80,151 @@ def serialize_memory(db: Session, memory: Memory, viewer: User | None) -> dict:
         "updated_at": memory.updated_at,
     }
 
+# ----- US-EXP-005: ký ức của tôi (đặt TRƯỚC /api/memories/{memory_id}, nếu không "mine" bị hiểu là id → 422) -----
+def mine_query(
+    user: User,
+    q: str | None,
+    year: int | None,
+    month: int | None,
+    date_from: date | None,
+    date_to: date | None,
+    visibility: str | None,
+    hashtags: str | None,
+):
+    if date_from and date_to and date_from > date_to:
+        raise ValidationException("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc")
+    stmt = select(Memory).where(Memory.user_id == user.id, Memory.deleted_at.is_(None))
+    if year:
+        stmt = stmt.where(extract("year", Memory.memory_date) == year)
+    if month:
+        stmt = stmt.where(extract("month", Memory.memory_date) == month)
+    if date_from:
+        stmt = stmt.where(Memory.memory_date >= date_from)
+    if date_to:
+        stmt = stmt.where(Memory.memory_date <= date_to)
+    if visibility in ("private", "public"):
+        stmt = stmt.where(Memory.visibility == visibility)
+    tags = [t.lstrip("#").lower() for t in re.split(r"[\s,]+", hashtags or "") if t.lstrip("#")]
+    if tags:
+        tagged = (
+            select(MemoryHashtag.memory_id)
+            .join(Hashtag, Hashtag.id == MemoryHashtag.hashtag_id)
+            .where(func.lower(Hashtag.name).in_(tags))
+        )
+        stmt = stmt.where(Memory.id.in_(tagged))
+    if q and q.strip():
+        like = f"%{q.strip()}%"
+        stmt = stmt.where(or_(Memory.title.ilike(like), Memory.place_name.ilike(like), Memory.content.ilike(like)))
+    return stmt
+
+
+def mine_filters(
+    q: str | None = Query(None, max_length=100),
+    year: int | None = Query(None, ge=1900, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    date_from: date | None = Query(None),
+    date_to: date | None = Query(None),
+    visibility: str | None = Query(None),
+    hashtags: str | None = Query(None),
+) -> dict:
+    return dict(q=q, year=year, month=month, date_from=date_from, date_to=date_to, visibility=visibility, hashtags=hashtags)
+
+
+def serialize_mine(memory: Memory) -> dict:
+    return {
+        "id": memory.id,
+        "title": memory.title,
+        "memory_date": memory.memory_date,
+        "place_name": memory.place_name,
+        "latitude": float(memory.latitude),
+        "longitude": float(memory.longitude),
+        "visibility": memory.visibility,
+        "status": memory.status,
+        "hashtags": sorted(link.hashtag.name for link in memory.hashtag_links),
+        "has_video": any(item.media_type == "video" for item in memory.media),
+        "cover_url": None,
+        "created_at": memory.created_at,
+    }
+
+
+@router.get("/api/memories/mine")
+def list_my_memories(
+    request: Request,
+    filters: dict = Depends(mine_filters),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    stmt = mine_query(user, **filters)
+    total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+    if order == "asc":
+        stmt = stmt.order_by(Memory.memory_date.asc(), Memory.created_at.asc(), Memory.id.asc())
+    else:
+        stmt = stmt.order_by(Memory.memory_date.desc(), Memory.created_at.desc(), Memory.id.desc())
+    memories = db.scalars(stmt.offset((page - 1) * page_size).limit(page_size)).all()
+
+    time_filtered = any(filters[key] for key in ("year", "month", "date_from", "date_to"))
+    if total:
+        message = "Thành công"
+    elif time_filtered:
+        message = "Bạn chưa có ký ức nào trong khoảng thời gian này"
+    else:
+        message = "Không có ký ức nào phù hợp bộ lọc"
+
+    return build_response(
+        200,
+        message,
+        request,
+        data={
+            "items": [serialize_mine(m) for m in memories],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "pages": max(1, math.ceil(total / page_size)),
+        },
+    )
+
+
+@router.get("/api/memories/mine/pins")
+def list_my_pins(
+    request: Request,
+    filters: dict = Depends(mine_filters),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    stmt = mine_query(user, **filters).order_by(Memory.memory_date.desc(), Memory.id.desc()).limit(1000)
+    data = [
+        {
+            "id": m.id,
+            "title": m.title,
+            "place_name": m.place_name,
+            "memory_date": m.memory_date,
+            "latitude": float(m.latitude),
+            "longitude": float(m.longitude),
+            "visibility": m.visibility,
+            "status": m.status,
+        }
+        for m in db.scalars(stmt).all()
+    ]
+    return build_response(200, "Thành công", request, data=data)
+
+
+@router.get("/api/memories/mine/years")
+def list_my_years(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    year = extract("year", Memory.memory_date)
+    rows = db.scalars(
+        select(year)
+        .where(Memory.user_id == user.id, Memory.deleted_at.is_(None))
+        .distinct()
+        .order_by(year.desc())
+    ).all()
+    return build_response(200, "Thành công", request, data=[int(y) for y in rows])
 
 # ----- US-MEM-005: xem chi tiết ký ức -----
 @router.get("/api/memories/{memory_id}")
