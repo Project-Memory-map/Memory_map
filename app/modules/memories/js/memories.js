@@ -149,7 +149,9 @@ const Memories = (() => {
         : "";
       if (!data.total) {
         list.replaceChildren(
-          filtered
+          timeFiltered
+            ? UI.emptyState("📅", "Bạn chưa có ký ức nào trong khoảng thời gian này")
+            : filtered
             ? UI.emptyState("🔎", "Không có ký ức nào phù hợp bộ lọc")
             : UI.emptyState("🗺️", "Bạn chưa có ký ức nào. Nhấp đúp lên bản đồ để ghim ký ức đầu tiên!"),
         );
