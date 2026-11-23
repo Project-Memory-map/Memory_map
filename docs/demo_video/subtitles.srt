@@ -1,0 +1,74 @@
+1
+00:00:00,150 --> 00:00:02,920
+Bản đồ Ký ức — lưu giữ hành trình trên không gian và
+thời gian.
+
+2
+00:00:03,350 --> 00:00:09,160
+Trên bản đồ Leaflet công khai, các ghim ký ức khắp ba
+mươi tư tỉnh thành hiện lên trực quan.
+
+3
+00:00:10,350 --> 00:00:16,640
+Tại phân hệ Khám phá, nhấp vào ghim công khai hiện thông
+tin và tên tác giả, ẩn hoàn toàn email.
+
+4
+00:00:16,740 --> 00:00:22,210
+Người dùng dễ dàng lọc theo hashtag Đà Lạt, chọn tỉnh
+Lâm Đồng và tìm từ khóa tức thì.
+
+5
+00:00:25,350 --> 00:00:31,780
+Phân hệ Tài khoản hỗ trợ đăng nhập linh hoạt bằng Email,
+Google và Facebook, bảo mật với JWT.
+
+6
+00:00:31,880 --> 00:00:36,850
+Đăng nhập tài khoản mẫu để mở bản đồ cá nhân cùng tên
+hiển thị ở góc trên màn hình.
+
+7
+00:00:40,350 --> 00:00:47,770
+Ở phân hệ Ký ức, chọn vị trí trên bản đồ, nhập tiêu đề,
+nội dung, ngày và gắn hashtag Đà Lạt, phượt.
+
+8
+00:00:47,870 --> 00:00:53,480
+Đính kèm ảnh sắc nét đã xóa tọa độ GPS cùng một đoạn
+video ngắn rồi lưu lại.
+
+9
+00:00:53,580 --> 00:01:00,100
+Chi tiết ký ức tải ảnh qua đường dẫn có chữ ký HMAC và
+phát video mượt mà ngay trên giao diện.
+
+10
+00:01:00,200 --> 00:01:04,700
+Bật công tắc chuyển nhanh từ Riêng tư sang Công khai để
+chia sẻ với cộng đồng.
+
+11
+00:01:05,350 --> 00:01:10,700
+Mục Chuyến đi gom các ký ức thành hành trình trên bản
+đồ, sắp xếp theo ngày tăng dần.
+
+12
+00:01:10,800 --> 00:01:15,960
+Bộ lọc dòng thời gian theo năm và khoảng ngày giúp tra
+cứu ký ức cá nhân nhanh chóng.
+
+13
+00:01:20,350 --> 00:01:25,340
+Phân hệ Quản trị cho phép tìm kiếm và kiểm duyệt mọi ký
+ức công khai trên hệ thống.
+
+14
+00:01:25,440 --> 00:01:30,380
+Thao tác ẩn kèm lý do cập nhật trạng thái tức thì và lưu
+vào nhật ký kiểm duyệt.
+
+15
+00:01:32,350 --> 00:01:39,920
+Bản đồ Ký ức — FastAPI, MySQL 8, Leaflet, đạt 238 test
+pytest vượt qua. Xin cảm ơn Quý Hội đồng!

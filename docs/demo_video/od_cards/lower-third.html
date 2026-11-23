@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>Lower-Third · Bản đồ Ký ức</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      margin: 0;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    .badge-card {
+      position: fixed;
+      top: 76px;
+      left: 404px;
+      display: inline-flex;
+      align-items: stretch;
+      gap: 14px;
+      padding: 12px 22px 12px 14px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.90);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 14px 36px rgba(2, 6, 23, 0.42);
+      backdrop-filter: blur(10px);
+      max-width: 780px;
+    }
+    .accent-bar {
+      width: 5px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #2563eb 0%, #7c3aed 52%, #e11d48 100%);
+      flex-shrink: 0;
+    }
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tag {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #93c5fd;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #fbf7ee;
+    }
+    .subtitle {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #cbd5e1;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="badge-card">
+    <div class="accent-bar"></div>
+    <div class="meta">
+      <div class="tag" id="badge-tag">MODULE 2</div>
+      <div class="title" id="badge-title">Ký ức, Media &amp; Quyền riêng tư</div>
+      <div class="subtitle" id="badge-subtitle">Ghim vị trí · Ảnh/Video HMAC · Riêng tư → Công khai</div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get("tag")) document.getElementById("badge-tag").textContent = p.get("tag");
+      if (p.get("title")) document.getElementById("badge-title").textContent = p.get("title");
+      if (p.get("subtitle")) document.getElementById("badge-subtitle").textContent = p.get("subtitle");
+    })();
+  </script>
+</body>
+</html>

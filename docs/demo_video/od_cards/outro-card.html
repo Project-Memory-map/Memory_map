@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Thẻ kết thúc · Bản đồ Ký ức</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0b1220;
+      --cream: #fbf7ee;
+      --white: #f8fafc;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --rose: #e11d48;
+      --font: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--ink); }
+    body { font-family: var(--font); color: var(--white); }
+    #main {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      overflow: hidden; transform-origin: top left;
+      background:
+        radial-gradient(ellipse at 25% 18%, rgba(37,99,235,.14), transparent 44%),
+        radial-gradient(ellipse at 82% 82%, rgba(225,29,72,.10), transparent 40%),
+        linear-gradient(145deg, #0f172a 0%, #0b1220 60%, #101425 100%);
+    }
+    .map-layer { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+    .grid-line { fill: none; stroke: #9ab0d6; stroke-opacity: .06; stroke-width: 1; }
+    .contour { fill: none; stroke: #8ea4cb; stroke-opacity: .07; stroke-width: 1.5; }
+    #route-glow { fill: none; stroke: url(#routeGradient); stroke-width: 22; opacity: .20; filter: url(#softGlow); stroke-linecap: round; }
+    #route { fill: none; stroke: url(#routeGradient); stroke-width: 4; stroke-linecap: round; }
+    .content {
+      position: relative; z-index: 2; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 64px 120px 108px;
+      text-align: center;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 9px 22px; border-radius: 999px;
+      border: 1px solid rgba(191,209,239,.24);
+      background: rgba(12,22,40,.75);
+      color: #c8d6ef; font-size: 15px; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--rose));
+      box-shadow: 0 0 14px rgba(124,58,237,.9);
+    }
+    h1 {
+      margin: 22px 0 18px; color: var(--cream);
+      font-size: 64px; font-weight: 800; letter-spacing: -.04em; line-height: 1.12;
+      text-shadow: 0 8px 36px rgba(0,0,0,.35);
+    }
+    .stack-pills {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+      margin-bottom: 40px;
+    }
+    .pill {
+      padding: 10px 22px; border-radius: 999px;
+      background: rgba(30,41,59,.72);
+      border: 1px solid rgba(148,163,184,.28);
+      color: #e2e8f0; font-size: 20px; font-weight: 600;
+    }
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px;
+      width: 100%; max-width: 1440px; margin-bottom: 40px;
+    }
+    .kpi {
+      padding: 28px 20px; border-radius: 20px;
+      background: linear-gradient(180deg, rgba(30,41,59,.78), rgba(15,23,42,.88));
+      border: 1px solid rgba(148,163,184,.22);
+      box-shadow: 0 18px 42px rgba(2,6,23,.45);
+    }
+    .kpi--accent {
+      border-color: rgba(59,130,246,.5);
+      background: linear-gradient(180deg, rgba(37,99,235,.22), rgba(15,23,42,.92));
+    }
+    .kpi__num {
+      font-size: 46px; font-weight: 800; letter-spacing: -.03em; color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .kpi--accent .kpi__num { color: #93c5fd; }
+    .kpi__label { font-size: 19px; font-weight: 600; color: #cbd5e1; }
+    .thanks {
+      padding: 18px 40px; border-radius: 16px;
+      background: linear-gradient(90deg, rgba(37,99,235,.24), rgba(124,58,237,.24), rgba(225,29,72,.22));
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 32px; font-weight: 700; color: var(--cream);
+      letter-spacing: -.01em;
+    }
+    .edge-mark { position: absolute; bottom: 42px; color: rgba(190,204,228,.43); font: 13px 'Segoe UI', system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; z-index: 3; }
+    .edge-mark.left { left: 76px; }
+    .edge-mark.right { right: 76px; }
+  </style>
+</head>
+<body>
+  <main id="main" data-composition-id="main" data-start="0" data-duration="8" data-width="1920" data-height="1080" data-fps="30" data-poster-time="4.5">
+    <svg class="map-layer" viewBox="0 0 1920 1080" aria-hidden="true">
+      <defs>
+        <pattern id="coordinateGrid" width="120" height="120" patternUnits="userSpaceOnUse">
+          <path d="M120 0H0V120" class="grid-line" />
+          <circle cx="0" cy="0" r="2" fill="#b7c8e8" fill-opacity=".18" />
+        </pattern>
+        <linearGradient id="routeGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2563eb" />
+          <stop offset=".5" stop-color="#7c3aed" />
+          <stop offset="1" stop-color="#e11d48" />
+        </linearGradient>
+        <filter id="softGlow" x="-25%" y="-35%" width="150%" height="170%">
+          <feGaussianBlur stdDeviation="11" />
+        </filter>
+      </defs>
+      <g id="gridMotion">
+        <rect width="1920" height="1080" fill="url(#coordinateGrid)" />
+        <path class="contour" d="M-80 220C210 140 420 260 660 175S1140 120 1440 205 1760 150 2000 180" />
+        <path class="contour" d="M-90 880C220 790 480 940 760 850S1250 770 1540 870 1820 820 2020 860" />
+      </g>
+      <path id="route-glow" d="M80 910C380 830 620 960 960 880C1260 810 1540 930 1840 840" />
+      <path id="route" d="M80 910C380 830 620 960 960 880C1260 810 1540 930 1840 840" />
+    </svg>
+
+    <section class="content" id="content">
+      <div class="eyebrow" id="eyebrow">TỔNG KẾT HỆ THỐNG · SPRINT 4</div>
+      <h1 id="title">Bản đồ Ký ức (Memory Map)</h1>
+      <div class="stack-pills" id="pills">
+        <span class="pill">FastAPI</span>
+        <span class="pill">SQLAlchemy 2.0</span>
+        <span class="pill">MySQL 8</span>
+        <span class="pill">Leaflet + OSM</span>
+        <span class="pill">Gemini AI</span>
+      </div>
+      <div class="kpi-grid" id="kpis">
+        <div class="kpi kpi--accent"><div class="kpi__num">238 / 238</div><div class="kpi__label">Test pytest PASS (100%)</div></div>
+        <div class="kpi"><div class="kpi__num">26</div><div class="kpi__label">User Stories hoàn thiện</div></div>
+        <div class="kpi"><div class="kpi__num">62</div><div class="kpi__label">API Endpoints thực tế</div></div>
+        <div class="kpi"><div class="kpi__num">108</div><div class="kpi__label">Tiêu chí nghiệm thu (AC)</div></div>
+      </div>
+      <div class="thanks" id="thanks">Xin trân trọng cảm ơn Quý Hội đồng!</div>
+    </section>
+
+    <div class="edge-mark left">FastAPI · MySQL 8 · Leaflet</div>
+    <div class="edge-mark right">Bản đồ Ký ức / Outro</div>
+  </main>
+  <script>
+    (() => {
+      const duration = 8;
+      const root = document.getElementById('main');
+      const grid = document.getElementById('gridMotion');
+      const route = document.getElementById('route');
+      const routeGlow = document.getElementById('route-glow');
+      const eyebrow = document.getElementById('eyebrow');
+      const title = document.getElementById('title');
+      const pills = document.getElementById('pills');
+      const kpis = [...document.querySelectorAll('.kpi')];
+      const thanks = document.getElementById('thanks');
+      const content = document.getElementById('content');
+      const clamp = v => Math.max(0, Math.min(1, v));
+      const easeOut = v => 1 - Math.pow(1 - clamp(v), 3);
+      let routeLength = 2500;
+      try { routeLength = route.getTotalLength(); } catch (_) {}
+      route.style.strokeDasharray = `${routeLength}`;
+      routeGlow.style.strokeDasharray = `${routeLength}`;
+
+      let current = 0;
+      function animNode(node, t, st, dur, dy = 20) {
+        const p = easeOut((t - st) / dur);
+        node.style.opacity = `${p}`;
+        node.style.transform = `translate3d(0, ${(1 - p) * dy}px, 0)`;
+      }
+      function renderAt(val) {
+        current = Math.max(0, Math.min(duration, Number(val) || 0));
+        grid.setAttribute('transform', `translate(${-4 * current} ${2 * current})`);
+        const rp = easeOut((current - 0.15) / 1.1);
+        route.style.strokeDashoffset = `${routeLength * (1 - rp)}`;
+        routeGlow.style.strokeDashoffset = `${routeLength * (1 - rp)}`;
+        animNode(eyebrow, current, 0.15, 0.45, 16);
+        animNode(title, current, 0.35, 0.55, 22);
+        animNode(pills, current, 0.65, 0.50, 16);
+        kpis.forEach((k, idx) => animNode(k, current, 0.90 + idx * 0.14, 0.55, 24));
+        animNode(thanks, current, 1.65, 0.60, 20);
+        const exit = clamp((current - 7.3) / 0.7);
+        content.style.opacity = `${1 - 0.12 * exit}`;
+      }
+      const tl = {
+        time(next) { if (next === undefined) return current; renderAt(next); return this; },
+        duration() { return duration; },
+        timeScale() { return 1; },
+        pause() { return this; },
+        paused() { return true; }
+      };
+      window.__timelines = { main: tl };
+      tl.time(4.5);
+      function fitStage() {
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        const left = Math.max(0, (window.innerWidth - 1920 * scale) / 2);
+        const top = Math.max(0, (window.innerHeight - 1080 * scale) / 2);
+        root.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
+      }
+      fitStage();
+      window.addEventListener('resize', fitStage, { passive: true });
+    })();
+  </script>
+</body>
+</html>
