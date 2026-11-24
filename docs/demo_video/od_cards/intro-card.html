@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="od-motion-audio" content="silent">
+  <meta name="od-motion-output" content="interactive">
+  <title>Thẻ mở đầu · Bản đồ Ký ức</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0b1220;
+      --slate: #0f172a;
+      --cream: #fbf7ee;
+      --white: #f8fafc;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --rose: #e11d48;
+      --font: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--ink); }
+    body { font-family: var(--font); color: var(--white); }
+    #main {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      transform-origin: top left;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse at 50% 22%, rgba(37,99,235,.11), transparent 42%),
+        radial-gradient(ellipse at 84% 76%, rgba(124,58,237,.08), transparent 35%),
+        linear-gradient(145deg, #0f172a 0%, #0b1220 58%, #101425 100%);
+    }
+    .map-layer { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+    .contour { fill: none; stroke: #8ea4cb; stroke-opacity: .075; stroke-width: 1.5; }
+    .grid-line { fill: none; stroke: #9ab0d6; stroke-opacity: .07; stroke-width: 1; }
+    .coord { fill: #a9b8d2; fill-opacity: .45; font: 14px 'Segoe UI', system-ui, sans-serif; letter-spacing: 2px; }
+    #foreground { position: absolute; inset: 0; }
+    #route-glow, #route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    #route-glow { stroke: url(#routeGradient); stroke-width: 21; opacity: .22; filter: url(#softGlow); }
+    #route { stroke: url(#routeGradient); stroke-width: 4; }
+    .route-dash { fill: none; stroke: #dbeafe; stroke-width: 2; stroke-dasharray: 2 16; opacity: .58; stroke-linecap: round; }
+    #pin { filter: url(#pinShadow); transform-box: fill-box; transform-origin: center; }
+    .pin-ring { fill: none; stroke: #e8edfa; stroke-opacity: .68; stroke-width: 2; }
+    .pin-core { fill: #f8fafc; }
+    .pin-glint { fill: white; opacity: .86; }
+    .connector { fill: none; stroke: url(#routeGradient); stroke-width: 2; stroke-dasharray: 5 10; opacity: .54; }
+    .node { stroke: #dfe8fb; stroke-width: 2; }
+    .node-blue { fill: var(--blue); }
+    .node-violet { fill: var(--violet); }
+    .node-rose { fill: var(--rose); }
+    .eyebrow-pill {
+      position: absolute;
+      top: 495px;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 20px;
+      border: 1px solid rgba(191,209,239,.22);
+      border-radius: 999px;
+      color: #c8d6ef;
+      background: rgba(12,22,40,.72);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+    .eyebrow-pill::before { width: 7px; height: 7px; margin-right: 12px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 14px rgba(37,99,235,.9); content: ''; }
+    h1 {
+      position: absolute;
+      top: 574px;
+      left: 160px;
+      width: 1600px;
+      margin: 0;
+      color: var(--cream);
+      font-size: 80px;
+      font-weight: 700;
+      letter-spacing: -.055em;
+      line-height: 1.13;
+      text-align: center;
+      text-shadow: 0 6px 36px rgba(0,0,0,.28);
+    }
+    .subtitle {
+      position: absolute;
+      top: 690px;
+      left: 200px;
+      width: 1520px;
+      margin: 0;
+      color: #d1daea;
+      font-size: 29px;
+      font-weight: 400;
+      letter-spacing: .01em;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .edge-mark { position: absolute; bottom: 46px; color: rgba(190,204,228,.43); font: 13px 'Segoe UI', system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+    .edge-mark.left { left: 76px; }
+    .edge-mark.right { right: 76px; }
+    @media (prefers-reduced-motion: reduce) { #main { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <main id="main" data-composition-id="main" data-start="0" data-duration="3" data-width="1920" data-height="1080" data-fps="30" data-poster-time="2.2" aria-label="Thẻ mở đầu Bản đồ Ký ức">
+    <svg class="map-layer" viewBox="0 0 1920 1080" aria-hidden="true">
+      <defs>
+        <pattern id="coordinateGrid" width="120" height="120" patternUnits="userSpaceOnUse">
+          <path d="M120 0H0V120" class="grid-line" />
+          <circle cx="0" cy="0" r="2" fill="#b7c8e8" fill-opacity=".2" />
+        </pattern>
+        <linearGradient id="routeGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2563eb" />
+          <stop offset=".52" stop-color="#7c3aed" />
+          <stop offset="1" stop-color="#e11d48" />
+        </linearGradient>
+        <radialGradient id="pinGradient" cx="35%" cy="20%" r="90%">
+          <stop offset="0" stop-color="#60a5fa" />
+          <stop offset=".48" stop-color="#7c3aed" />
+          <stop offset="1" stop-color="#e11d48" />
+        </radialGradient>
+        <filter id="softGlow" x="-25%" y="-35%" width="150%" height="170%">
+          <feGaussianBlur stdDeviation="11" />
+        </filter>
+        <filter id="pinShadow" x="-80%" y="-60%" width="260%" height="260%">
+          <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#030712" flood-opacity=".75" />
+          <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#7c3aed" flood-opacity=".42" />
+        </filter>
+      </defs>
+      <g id="gridMotion">
+        <rect width="1920" height="1080" fill="url(#coordinateGrid)" />
+        <path class="contour" d="M-100 330C180 208 290 248 438 170S730 90 900 190 1190 320 1354 234 1640 90 2010 176" />
+        <path class="contour" d="M-120 368C176 250 320 302 468 216S734 142 884 230 1190 360 1376 274 1668 142 2012 210" />
+        <path class="contour" d="M-70 932C180 844 310 864 510 936S838 1005 1008 910 1295 800 1460 878 1740 994 1990 890" />
+        <path class="contour" d="M-80 972C192 888 336 914 520 980S834 1046 1020 954 1295 842 1470 920 1742 1038 2000 932" />
+        <text class="coord" x="86" y="126">GRID / 08</text>
+        <text class="coord" x="1642" y="126">NORTH · 00</text>
+        <text class="coord" x="86" y="1010">WEST / 00</text>
+        <text class="coord" x="1642" y="1010">EAST · 00</text>
+      </g>
+      <g id="foreground">
+        <path class="connector" d="M960 484C956 578 962 635 958 746" />
+        <path id="route-glow" d="M110 820C352 650 560 880 790 735C978 616 1110 642 1325 733C1536 822 1695 810 1810 716" />
+        <path id="route" d="M110 820C352 650 560 880 790 735C978 616 1110 642 1325 733C1536 822 1695 810 1810 716" />
+        <path class="route-dash" d="M110 820C352 650 560 880 790 735C978 616 1110 642 1325 733C1536 822 1695 810 1810 716" />
+        <circle class="node node-blue" cx="286" cy="724" r="8" />
+        <circle class="node node-violet" cx="960" cy="660" r="8" />
+        <circle class="node node-rose" cx="1606" cy="786" r="8" />
+        <g id="pin" transform="translate(960 414)">
+          <path d="M0-62C-38-62-68-32-68 5c0 48 68 116 68 116S68 53 68 5C68-32 38-62 0-62Z" fill="url(#pinGradient)" stroke="#f8fafc" stroke-opacity=".75" stroke-width="2" />
+          <circle class="pin-ring" cx="0" cy="3" r="25" />
+          <circle class="pin-core" cx="0" cy="3" r="12" />
+          <circle class="pin-glint" cx="-5" cy="-2" r="3.5" />
+        </g>
+      </g>
+    </svg>
+    <div class="eyebrow-pill" id="eyebrow">ĐỒ ÁN THỰC TẬP · MEMORY MAP</div>
+    <h1 id="title">Bản đồ Ký ức (Memory Map)</h1>
+    <p class="subtitle" id="subtitle">Lưu giữ hành trình trên không gian &amp; thời gian</p>
+    <div class="edge-mark left">Một hành trình · nhiều dấu mốc</div>
+    <div class="edge-mark right">Bản đồ Ký ức / 01</div>
+  </main>
+  <script>
+    (() => {
+      const duration = 3;
+      const posterTime = 2.2;
+      const root = document.getElementById('main');
+      const grid = document.getElementById('gridMotion');
+      const foreground = document.getElementById('foreground');
+      const route = document.getElementById('route');
+      const routeGlow = document.getElementById('route-glow');
+      const pin = document.getElementById('pin');
+      const eyebrow = document.getElementById('eyebrow');
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+      const clamp = value => Math.max(0, Math.min(1, value));
+      const easeOut = value => 1 - Math.pow(1 - clamp(value), 3);
+      const mix = (a, b, p) => a + (b - a) * p;
+      let routeLength = 3000;
+      try { routeLength = route.getTotalLength(); } catch (_) {}
+      route.style.strokeDasharray = `${routeLength}`;
+      routeGlow.style.strokeDasharray = `${routeLength}`;
+
+      function reveal(node, start, end, distance) {
+        const p = easeOut((current - start) / (end - start));
+        node.style.opacity = `${p}`;
+        node.style.transform = `translate3d(0, ${mix(distance, 0, p)}px, 0)`;
+      }
+      let current = 0;
+      function renderAt(value) {
+        current = Math.max(0, Math.min(duration, Number(value) || 0));
+        grid.setAttribute('transform', `translate(${-8 * current} ${4 * current})`);
+        const routeProgress = easeOut((current - .24) / .96);
+        const offset = routeLength * (1 - routeProgress);
+        route.style.strokeDashoffset = `${offset}`;
+        routeGlow.style.strokeDashoffset = `${offset}`;
+        const pinProgress = easeOut((current - .62) / .52);
+        pin.style.opacity = `${pinProgress}`;
+        pin.setAttribute('transform', `translate(960 ${414 - 78 * (1 - pinProgress)}) scale(${.86 + .14 * pinProgress})`);
+        reveal(eyebrow, .78, 1.07, 16);
+        reveal(title, .94, 1.26, 20);
+        reveal(subtitle, 1.08, 1.32, 16);
+        const exit = clamp((current - 2.7) / .3);
+        foreground.style.opacity = `${1 - .08 * exit}`;
+        foreground.style.transform = `translate3d(0, ${-4 * exit}px, 0)`;
+      }
+
+      function makeFallback() {
+        let value = 0;
+        let scale = 1;
+        return {
+          time(next) { if (next === undefined) return value; value = Math.max(0, Math.min(duration, Number(next) || 0)); renderAt(value); return this; },
+          duration() { return duration; },
+          timeScale(next) { if (next === undefined) return scale; scale = Number(next) || 1; return this; },
+          pause() { return this; },
+          paused() { return true; },
+          progress(next) { if (next === undefined) return value / duration; return this.time(Number(next) * duration); }
+        };
+      }
+      const fallback = makeFallback();
+      window.__timelines = { main: fallback };
+      fallback.time(posterTime);
+
+      function installGsap() {
+        if (!window.gsap || window.__timelines.main !== fallback) return;
+        const clock = { t: 0 };
+        const tl = window.gsap.timeline({ paused: true });
+        window.gsap.set([route, routeGlow], { strokeDasharray: routeLength, strokeDashoffset: routeLength });
+        window.gsap.set(pin, { opacity: 0, y: -78, scale: .86, transformOrigin: '50% 50%' });
+        window.gsap.set([eyebrow, title, subtitle], { opacity: 0, y: 18 });
+        window.gsap.set(foreground, { opacity: 1, y: 0 });
+        tl.to(grid, { attr: { transform: 'translate(-24 12)' }, duration, ease: 'none' }, 0);
+        tl.to([route, routeGlow], { strokeDashoffset: 0, duration: .96, ease: 'power2.out' }, .24);
+        tl.to(pin, { opacity: 1, y: 0, scale: 1, duration: .52, ease: 'back.out(1.35)' }, .62);
+        tl.to(eyebrow, { opacity: 1, y: 0, duration: .29, ease: 'power2.out' }, .78);
+        tl.to(title, { opacity: 1, y: 0, duration: .32, ease: 'power2.out' }, .94);
+        tl.to(subtitle, { opacity: 1, y: 0, duration: .24, ease: 'power2.out' }, 1.08);
+        const gsapClock = { t: 0 };
+        tl.to(gsapClock, { t: duration, duration, ease: 'none' }, 0);
+        tl.to(foreground, { opacity: .92, y: -4, duration: .3, ease: 'power1.in' }, 2.7);
+        tl.timeScale(1);
+        window.__timelines = { main: tl };
+        tl.time(fallback.time(), false);
+      }
+      function loadScript(src, onerror) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = installGsap;
+        script.onerror = onerror || (() => {});
+        document.head.appendChild(script);
+      }
+      loadScript('./gsap.min.js', () => loadScript('https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js'));
+
+      let playing = false;
+      let lastFrame = 0;
+      function postState() {
+        if (window.parent !== window) window.parent.postMessage({ source: 'memory-map-timeline', asset: 'intro', time: current, duration, playing }, '*');
+      }
+      function seek(value) {
+        current = Math.max(0, Math.min(duration, Number(value) || 0));
+        window.__timelines.main.time(current, false);
+        postState();
+      }
+      function tick(now) {
+        if (!playing) return;
+        const delta = lastFrame ? Math.max(0, (now - lastFrame) / 1000) : 0;
+        lastFrame = now;
+        let next = current + delta;
+        if (next >= duration) next %= duration;
+        seek(next);
+        requestAnimationFrame(tick);
+      }
+      window.addEventListener('message', event => {
+        if (event.data?.source !== 'memory-map-hub') return;
+        const command = event.data.command;
+        if (command === 'seek') seek(event.data.value);
+        if (command === 'play') {
+          if (current >= duration) seek(0);
+          playing = true; lastFrame = 0; postState(); requestAnimationFrame(tick);
+        }
+        if (command === 'pause') { playing = false; lastFrame = 0; postState(); }
+      });
+      function fitStage() {
+        if (window.__odMotionRender) return;
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        const left = Math.max(0, (window.innerWidth - 1920 * scale) / 2);
+        const top = Math.max(0, (window.innerHeight - 1080 * scale) / 2);
+        root.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
+      }
+      fitStage();
+      window.addEventListener('resize', fitStage, { passive: true });
+      postState();
+    })();
+  </script>
+</body>
+</html>

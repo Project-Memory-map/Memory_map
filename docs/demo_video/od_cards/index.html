@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Bản đồ Ký ức · Motion Kit</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #0b1220;
+      --slate: #0f172a;
+      --panel: #111c31;
+      --line: rgba(186, 202, 228, .14);
+      --muted: #a9b5c9;
+      --cream: #fbf7ee;
+      --white: #f8fafc;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --rose: #e11d48;
+      --radius: 12px;
+      --space-1: 8px;
+      --space-2: 16px;
+      --space-3: 24px;
+      --space-4: 32px;
+      --space-5: 48px;
+      --body-size: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--white);
+      background-color: var(--ink);
+      background-image:
+        radial-gradient(ellipse at 16% 0%, rgba(37,99,235,.14), transparent 36%),
+        radial-gradient(ellipse at 90% 16%, rgba(124,58,237,.09), transparent 34%),
+        linear-gradient(rgba(124,146,181,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,146,181,.045) 1px, transparent 1px);
+      background-size: auto, auto, 48px 48px, 48px 48px;
+      font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: var(--body-size);
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    .shell { width: min(100% - 48px, 1520px); margin-inline: auto; }
+    header { padding: 56px 0 32px; }
+    .eyebrow {
+      margin: 0 0 14px;
+      color: #9db7f2;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 880px;
+      margin: 0;
+      color: var(--cream);
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      letter-spacing: -.045em;
+      line-height: 1.12;
+    }
+    .lede { max-width: 720px; margin: 18px 0 0; color: #bec9da; font-size: 18px; }
+    .route-key { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 26px 0 0; padding: 0; list-style: none; color: #b6c1d3; font-size: 13px; }
+    .route-key li { display: inline-flex; align-items: center; gap: 9px; }
+    .route-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 14px currentColor; }
+    .route-dot.personal { color: var(--blue); background: var(--blue); }
+    .route-dot.trip { color: var(--violet); background: var(--violet); }
+    .route-dot.community { color: var(--rose); background: var(--rose); }
+    .asset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding-bottom: 64px; }
+    .asset-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(160deg, rgba(23,36,60,.96), rgba(12,21,38,.98)); box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+    .asset-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 20px 16px; }
+    .asset-head h2 { margin: 0; color: var(--cream); font-size: 18px; line-height: 1.35; }
+    .asset-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .badge { flex: none; border: 1px solid rgba(148,163,184,.23); border-radius: 999px; padding: 5px 9px; color: #c7d2e2; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .stage-frame { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: #0b1220; }
+    .controls { display: grid; grid-template-columns: 76px minmax(80px,1fr) 74px; align-items: center; gap: 10px; padding: 14px 16px 10px; }
+    .play-button, .static-status {
+      min-height: 36px;
+      border: 1px solid rgba(159,179,211,.22);
+      border-radius: 7px;
+      color: var(--white);
+      background: rgba(255,255,255,.055);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .play-button:hover { border-color: rgba(147,177,236,.58); background: rgba(37,99,235,.17); }
+    .play-button:focus-visible, input[type="range"]:focus-visible, .file-link:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+    input[type="range"] { width: 100%; height: 5px; margin: 0; accent-color: #7c9cf1; cursor: pointer; }
+    .timecode { color: #bac5d7; font-variant-numeric: tabular-nums; font-size: 11px; text-align: right; }
+    .asset-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 16px 18px; }
+    .asset-note { margin: 0; color: #91a0b8; font-size: 11px; }
+    .file-link { color: #c6d6f4; font-size: 12px; font-weight: 650; text-decoration: none; white-space: nowrap; }
+    .file-link:hover { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+    .static-status { display: inline-flex; align-items: center; justify-content: center; padding-inline: 10px; color: #c5d2e7; cursor: default; }
+    footer { border-top: 1px solid var(--line); padding: 18px 0 28px; color: #8e9db3; font-size: 12px; }
+    @media (max-width: 1120px) { .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 32px, 540px); }
+      header { padding-top: 36px; }
+      .asset-grid { grid-template-columns: 1fr; gap: 16px; }
+      .lede { font-size: 16px; }
+      .asset-head { padding: 17px 16px 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <p class="eyebrow">Bản đồ Ký ức · Motion Kit</p>
+    <h1>Một hành trình.<br>Ba cách kể.</h1>
+    <p class="lede">Bộ thẻ chuyển động và lớp tiêu đề cho đồ án Memory Map. Chọn phát hoặc kéo thanh thời gian để xem từng nhịp chuyển động.</p>
+    <ul class="route-key" aria-label="Màu sắc tuyến đường">
+      <li><span class="route-dot personal" aria-hidden="true"></span>Cá nhân</li>
+      <li><span class="route-dot trip" aria-hidden="true"></span>Chuyến đi</li>
+      <li><span class="route-dot community" aria-hidden="true"></span>Cộng đồng</li>
+    </ul>
+  </header>
+
+  <main class="shell asset-grid">
+    <article class="asset-card" data-asset="intro" data-duration="3" data-poster="2.2">
+      <div class="asset-head">
+        <div><h2>Thẻ mở đầu</h2><p>Giới thiệu Bản đồ Ký ức</p></div>
+        <span class="badge">00:03</span>
+      </div>
+      <iframe class="stage-frame" src="intro-card.html?embed=1" title="Xem trước thẻ mở đầu" loading="eager" allow="autoplay"></iframe>
+      <div class="controls">
+        <button class="play-button" type="button" aria-label="Phát thẻ mở đầu" data-toggle>Phát</button>
+        <input type="range" min="0" max="3" step="0.01" value="2.2" aria-label="Tua thẻ mở đầu" data-scrub>
+        <span class="timecode" data-time>00:02.20</span>
+      </div>
+      <div class="asset-foot"><p class="asset-note">Timeline có thể tua · 1920 × 1080</p><a class="file-link" href="intro-card.html">Mở tệp ↗</a></div>
+    </article>
+
+    <article class="asset-card" data-asset="outro" data-duration="8" data-poster="4.5">
+      <div class="asset-head">
+        <div><h2>Thẻ tổng kết</h2><p>Tech stack, số liệu và lời cảm ơn</p></div>
+        <span class="badge">00:08</span>
+      </div>
+      <iframe class="stage-frame" src="outro-card.html?embed=1" title="Xem trước thẻ tổng kết" loading="eager" allow="autoplay"></iframe>
+      <div class="controls">
+        <button class="play-button" type="button" aria-label="Phát thẻ tổng kết" data-toggle>Phát</button>
+        <input type="range" min="0" max="8" step="0.01" value="4.5" aria-label="Tua thẻ tổng kết" data-scrub>
+        <span class="timecode" data-time>00:04.50</span>
+      </div>
+      <div class="asset-foot"><p class="asset-note">Timeline có thể tua · 1920 × 1080</p><a class="file-link" href="outro-card.html">Mở tệp ↗</a></div>
+    </article>
+
+    <article class="asset-card" data-asset="lower-third">
+      <div class="asset-head">
+        <div><h2>Lower-third</h2><p>Lớp tiêu đề trong suốt, tùy biến bằng URL</p></div>
+        <span class="badge">Overlay</span>
+      </div>
+      <iframe class="stage-frame" src="lower-third.html?embed=1" title="Xem trước lower-third" loading="eager" allow="autoplay"></iframe>
+      <div class="controls" style="grid-template-columns: 1fr auto;">
+        <span class="static-status">Mẫu tĩnh · hiển thị ngay khi tải</span>
+        <span class="timecode">1920 × 1080</span>
+      </div>
+      <div class="asset-foot"><p class="asset-note">Nền trong suốt · vùng phụ đề được chừa trống</p><a class="file-link" href="lower-third.html">Mở tệp ↗</a></div>
+    </article>
+  </main>
+
+  <footer><div class="shell">Bản đồ Ký ức (Memory Map) <span aria-hidden="true">·</span> Lưu giữ hành trình trên không gian &amp; thời gian</div></footer>
+
+  <script>
+    (() => {
+      const cards = [...document.querySelectorAll('.asset-card[data-duration]')];
+      const fmt = value => {
+        const minutes = Math.floor(value / 60);
+        const seconds = value - minutes * 60;
+        return `${String(minutes).padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
+      };
+      for (const card of cards) {
+        const frame = card.querySelector('iframe');
+        const button = card.querySelector('[data-toggle]');
+        const range = card.querySelector('[data-scrub]');
+        const time = card.querySelector('[data-time]');
+        const send = message => frame.contentWindow?.postMessage({ source: 'memory-map-hub', ...message }, '*');
+        frame.addEventListener('load', () => send({ command: 'seek', value: Number(card.dataset.poster) }));
+        button.addEventListener('click', () => {
+          const isPlaying = button.dataset.playing === 'true';
+          send({ command: isPlaying ? 'pause' : 'play' });
+        });
+        range.addEventListener('input', () => send({ command: 'seek', value: Number(range.value) }));
+        window.addEventListener('message', event => {
+          if (event.source !== frame.contentWindow || event.data?.source !== 'memory-map-timeline') return;
+          const state = event.data;
+          const duration = Number(card.dataset.duration);
+          const current = Math.max(0, Math.min(duration, Number(state.time) || 0));
+          range.value = current;
+          time.textContent = fmt(current);
+          button.dataset.playing = state.playing ? 'true' : 'false';
+          button.textContent = state.playing ? 'Tạm dừng' : 'Phát';
+          button.setAttribute('aria-label', `${state.playing ? 'Tạm dừng' : 'Phát'} ${card.dataset.asset === 'intro' ? 'thẻ mở đầu' : 'thẻ tổng kết'}`);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
